@@ -644,4 +644,5 @@ void Draw::CornellBox(Scene *scene) {
 	//scene->lights[0] = light4;
 	//DirectionalLight *light3 = new DirectionalLight(Color(1, 1, 1), vec3(2.9, -2.24, -5));
 	//scene->lights[2] = light3;
+
 }
