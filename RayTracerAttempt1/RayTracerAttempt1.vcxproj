@@ -125,6 +125,7 @@
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="test_scenes.cpp" />
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -138,6 +139,7 @@
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shape.h" />
+    <ClInclude Include="test_scenes.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Variables.h" />
   </ItemGroup>
