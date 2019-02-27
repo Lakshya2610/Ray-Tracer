@@ -1,1 +1,3 @@
-1.	Add support for multi-sampling 
+1.  Fix Bounding Box support
+2.	Add support for multi-sampling 
+3.  Figure out how to shadow areas obstructed by refractive surfaces
