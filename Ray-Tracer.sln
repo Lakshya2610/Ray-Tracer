@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ray-Tracer", "RayTracerAttempt1\RayTracerAttempt1.vcxproj", "{38681E4E-C554-4B39-BAD6-4BF95FDCDA99}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ray-Tracer", "Ray-Tracer\RayTracerAttempt1.vcxproj", "{38681E4E-C554-4B39-BAD6-4BF95FDCDA99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
