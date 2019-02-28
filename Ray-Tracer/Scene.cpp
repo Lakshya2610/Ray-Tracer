@@ -135,6 +135,38 @@ vec3 Scene::getRandomPointOnQuad(Quad *quad) {//buggy!!
 	return ret;
 }
 
+Ray* Scene::getShadowRays(vec3 mypos, AreaLight *light) {
+	/*
+	Returns shadow rays for area light. Manually picking uniformly distributed 
+	points on the light right now.
+	*/
+	Ray shadowRays[17];
+
+	vec3 midpoint1 = (light->q->v1 + light->q->v2) / 2.0;
+	vec3 midpoint2 = ((light->q->v2 + light->q->v3) / 2.0);
+	vec3 midpoint3 = ((light->q->v3 + light->q->v4) / 2.0);
+	vec3 midpoint4 = ((light->q->v1 + light->q->v4) / 2.0);
+	shadowRays[0] = Ray(mypos, light->q->v1 - mypos, INFINITY, 0, 0);
+	shadowRays[1] = Ray(mypos, light->q->v2 - mypos, INFINITY, 0, 0);
+	shadowRays[2] = Ray(mypos, light->q->v3 - mypos, INFINITY, 0, 0);
+	shadowRays[3] = Ray(mypos, light->q->v4 - mypos, INFINITY, 0, 0);
+	shadowRays[4] = Ray(mypos, light->pos - mypos, INFINITY, 0, 0);
+	shadowRays[5] = Ray(mypos, midpoint1 - mypos, INFINITY, 0, 0);
+	shadowRays[6] = Ray(mypos, midpoint2 - mypos, INFINITY, 0, 0);
+	shadowRays[7] = Ray(mypos, midpoint3 - mypos, INFINITY, 0, 0);
+	shadowRays[8] = Ray(mypos, midpoint4 - mypos, INFINITY, 0, 0);
+	shadowRays[9] = Ray(mypos, ((light->q->v1 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[10] = Ray(mypos, ((light->q->v2 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[11] = Ray(mypos, ((light->q->v2 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[12] = Ray(mypos, ((light->q->v3 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[13] = Ray(mypos, ((light->q->v3 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[14] = Ray(mypos, ((light->q->v4 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[15] = Ray(mypos, ((light->q->v1 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[16] = Ray(mypos, ((light->q->v4 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
+
+	return shadowRays;
+}
+
 //std::mutex shadowMutex;
 
 Color Scene::findColor(Intersection *in) {
@@ -202,7 +234,6 @@ Color Scene::findColor(Intersection *in) {
 		if (dynamic_cast<AreaLight*>(lights[i]) != 0) {
 			AreaLight *light = dynamic_cast<AreaLight*>(lights[i]);
 			vec3 lightposn = light->pos;
-			//vec3 direction = light->q.retNormal();
 			vec3 direction = glm::normalize(lightposn - mypos);
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
 			vec3 halfvec = glm::normalize(eyedirn + direction);
@@ -211,29 +242,6 @@ Color Scene::findColor(Intersection *in) {
 			//float attenFactor = (distance*0.85);
 
 			//shadows
-			
-			vec3 midpoint1 = (light->q->v1 + light->q->v2) / 2.0;
-			vec3 midpoint2 = ((light->q->v2 + light->q->v3) / 2.0);
-			vec3 midpoint3 = ((light->q->v3 + light->q->v4) / 2.0);
-			vec3 midpoint4 = ((light->q->v1 + light->q->v4) / 2.0);
-			Ray shadowRay1 = Ray(mypos, light->q->v1 - mypos, INFINITY, 0, 0);
-			Ray shadowRay2 = Ray(mypos, light->q->v2 - mypos, INFINITY, 0, 0);
-			Ray shadowRay3 = Ray(mypos, light->q->v3 - mypos, INFINITY, 0, 0);
-			Ray shadowRay4 = Ray(mypos, light->q->v4 - mypos, INFINITY, 0, 0);
-			Ray shadowRay5 = Ray(mypos, lightposn - mypos, INFINITY, 0, 0);
-			Ray shadowRay6 = Ray(mypos, midpoint1 - mypos, INFINITY, 0, 0);
-			Ray shadowRay7 = Ray(mypos, midpoint2 - mypos, INFINITY, 0, 0);
-			Ray shadowRay8 = Ray(mypos, midpoint3 - mypos, INFINITY, 0, 0);
-			Ray shadowRay9 = Ray(mypos, midpoint4 - mypos, INFINITY, 0, 0);
-			Ray shadowRay10 = Ray(mypos, ((light->q->v1 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
-			Ray shadowRay11 = Ray(mypos, ((light->q->v2 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
-			Ray shadowRay12 = Ray(mypos, ((light->q->v2 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
-			Ray shadowRay13 = Ray(mypos, ((light->q->v3 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
-			Ray shadowRay14 = Ray(mypos, ((light->q->v3 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
-			Ray shadowRay15 = Ray(mypos, ((light->q->v4 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
-			Ray shadowRay16 = Ray(mypos, ((light->q->v1 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
-			Ray shadowRay17 = Ray(mypos, ((light->q->v4 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
-			
 
 			Color pointColor = computeLight(direction, lightColor, normal, halfvec, in->shape);
 			float cf = 1.0f / 17.0f; //no. of sample points for soft shadow tests(denom). multiplied to each unshadowed part
@@ -247,183 +255,17 @@ Color Scene::findColor(Intersection *in) {
 						color.b += cf * pointColor.b*attenFactor;
 					}
 				}
-			}
+			} // disabled for now. Doesn't work right now.
 			else {
-				if (!intersectP(shadowRay1, in->shape)) {
-
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay2, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay3, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay4, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay5, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay6, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay7, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay8, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay9, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay10, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay11, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay12, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay13, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay14, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay15, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay16, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
-				}
-				if (!intersectP(shadowRay17, in->shape)) {
-					color.r += cf * pointColor.r*attenFactor;
-					color.g += cf * pointColor.g*attenFactor;
-					color.b += cf * pointColor.b*attenFactor;
+				Ray* shadowRays = getShadowRays(mypos, light);
+				for (unsigned int i = 0; i < 17; i++) {
+					if (!intersectP(shadowRays[i], in->shape)) {
+						color.r += cf * pointColor.r*attenFactor;
+						color.g += cf * pointColor.g*attenFactor;
+						color.b += cf * pointColor.b*attenFactor;
+					}
 				}
 			}
-			/*
-			if (!intersectP(shadowRay1, in->shape)) {
-
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay2, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay3, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay4, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay5, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay6, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay7, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay8, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay9, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay10, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay11, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay12, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay13, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay14, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay15, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay16, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			if (!intersectP(shadowRay17, in->shape)) {
-				color.r += cf*pointColor.r*attenFactor;
-				color.g += cf*pointColor.g*attenFactor;
-				color.b += cf*pointColor.b*attenFactor;
-			}
-			*/
 		} 
 	}
 

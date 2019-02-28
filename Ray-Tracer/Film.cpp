@@ -37,21 +37,21 @@ void Film::superSample() {
 	Color pixel2Color = Color();
 	Color pixel3Color = Color();
 	Color pixel4Color = Color();
-	int control = 0;
+	int offset = 0;
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
-			int debug1 = (6 * j) + (2 * i * 3 * w);
-			int debug2 = (6 * j) + (((2 * i) + 1) * 3 * w);
-			pixel1Color = Color(pixels[debug1 + 2], pixels[debug1 + 1], pixels[debug1]);
-			pixel2Color = Color(pixels[debug1 + 5], pixels[debug1 + 4], pixels[debug1 + 3]);
-			pixel3Color = Color(pixels[debug2 + 2], pixels[debug2 + 1], pixels[debug2]);
-			pixel4Color = Color(pixels[debug2 + 5], pixels[debug2 + 4], pixels[debug2 + 3]);
+			int index1 = (6 * j) + (2 * i * 3 * w);
+			int index2 = (6 * j) + (((2 * i) + 1) * 3 * w);
+			pixel1Color = Color(pixels[index1 + 2], pixels[index1 + 1], pixels[index1]);
+			pixel2Color = Color(pixels[index1 + 5], pixels[index1 + 4], pixels[index1 + 3]);
+			pixel3Color = Color(pixels[index2 + 2], pixels[index2 + 1], pixels[index2]);
+			pixel4Color = Color(pixels[index2 + 5], pixels[index2 + 4], pixels[index2 + 3]);
 
 			Color finalColor = (pixel1Color + pixel2Color + pixel3Color + pixel4Color) / 4.0;
-			superSampledPixels[3 * control] = finalColor.b;
-			superSampledPixels[(3 * control) + 1] = finalColor.g;
-			superSampledPixels[(3 * control) + 2] = finalColor.r;
-			control++;
+			superSampledPixels[3 * offset] = finalColor.b;
+			superSampledPixels[(3 * offset) + 1] = finalColor.g;
+			superSampledPixels[(3 * offset) + 2] = finalColor.r;
+			offset++;
 		}
 	}
 }
