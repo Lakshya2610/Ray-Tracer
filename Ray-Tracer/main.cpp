@@ -26,7 +26,7 @@ using namespace std;
 
 stack<mat4> transfstack;
 
-Scene *scene = new Scene(100, 100);
+Scene *scene = new Scene(1920, 1080);
 
 void mainLoop(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film, Color *color, int depth, Intersection *in) {
 	//Color defColor = Color(0, 0, 0);
