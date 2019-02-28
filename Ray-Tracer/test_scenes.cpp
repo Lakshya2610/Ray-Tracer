@@ -1,14 +1,14 @@
 #include "test_scenes.h"
 
 void Draw::parsedScene(Scene *scene, string objFile) {
-	scene->numLights = 1;
-	scene->maxDepth = 5;
+	//scene->numLights = 1;
+	scene->maxDepth = 2;
 
 	objParser parser;
 	parser.parseObj(objFile, scene);
 
-	PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 2, 2));
-	scene->lights[0] = p;
+	//PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 2, 2));
+	//scene->lights[0] = p;
 }
 
 void Draw::CylinderTest(Scene *scene) {
@@ -51,14 +51,14 @@ void Draw::CylinderTest(Scene *scene) {
 
 void Draw::TestScene(Scene *scene) {
 	transfstack.push(mat4(1.0));
-	scene->numObjects = 7;// 6 + 1 area light
+	scene->numObjects = 6;// 6 + 1 area light
 	scene->numLights = 1;
 	scene->maxDepth = 5;
 	float eKr[3] = { 0,0,0 };
 	float atten[3] = { 0,0.555,0 };//.155(2)
 	scene->setAttenuation(atten);
 
-	Sphere *trans = new Sphere(vec3(2.5, -1.25, -7.5), .6);
+	Sphere *trans = new Sphere(vec3(2.5, -1.25, -7.65), .6);
 	trans->setTransform(transfstack.top());
 	float ambient_1[3] = { .1,.1,.1 };
 	float diffuse_1[3] = { 0.1,.1,0.1 };
@@ -69,13 +69,21 @@ void Draw::TestScene(Scene *scene) {
 	trans->setKr(eKr);
 	trans->setRefractive(true);
 	trans->setReractiveIndex(1.5);
-	scene->shapes[6] = trans;
+	scene->shapes[3] = trans;
 
-	/*Cylinder *c = new Cylinder(0.5, vec3(-1.6, 0.5, -5), 1);
-	c->setRefractive(true);
-	c->setReractiveIndex(1.5);
+	/*Cylinder *c = new Cylinder(0.4, vec3(0, 0.25, -8.5), 0.8);
+	//c->setRefractive(true);
+	//c->setReractiveIndex(1.5);
 	c->setTransform(transfstack.top());
-	scene->shapes[5] = c;*/
+	float ambient_c[3] = { 0.1, 0.1, 0.1 };
+	float diffuse_c[3] = { 0.4, 0.3, 0.525 };
+	float specular_c[3] = { 0.01, 0.01, 0.01 };
+	float kr_c[3] = { 0.01, 0.01, 0.01 };
+	c->setKr(kr_c);
+	c->setAmbient(ambient_c);
+	c->setDiffuse(diffuse_c);
+	c->setSpecular(specular_c);
+	scene->shapes[7] = c;*/
 
 	Triangle *t1 = new Triangle(vec3(-100, 100, -10), vec3(-100, -100, -10), vec3(100, 100, -10));
 	t1->setTransform(transfstack.top());
@@ -104,26 +112,27 @@ void Draw::TestScene(Scene *scene) {
 	t3->setSpecular(specular);
 	scene->shapes[2] = t3;
 
-	Sphere *s1 = new Sphere(vec3(0, -1, -7.5), .9);
+	/*Sphere *s1 = new Sphere(vec3(0, -1, -7.65), .9);
 	s1->setTransform(transfstack.top());
 	float ambient1[3] = { 0.4,0.1,0.1 };
 	float diffuse1[3] = { 0.6,0,0 };
-	float specular1[3] = { 1,1,1 };
-	float ke[3] = { 0.155,.155,.155 };
+	float specular1[3] = { .1,.1,.1 };
+	float ke[3] = { 0.0155,.0155,.0155 };
 	s1->setKr(ke);
 	//s1->setRefractive(true);
 	//s1->setReractiveIndex(1.5);
 	s1->setAmbient(ambient1);
 	s1->setSpecular(specular1);
 	s1->setDiffuse(diffuse1);
-	scene->shapes[3] = s1;
+	scene->shapes[3] = s1;*/
 
-	Sphere *s2 = new Sphere(vec3(-1.7, 0, -7.5), .9);
-	s1->setTransform(transfstack.top());
+	Sphere *s2 = new Sphere(vec3(-1.7, 0, -7.65), .9);
+	s2->setTransform(transfstack.top());
 	float ambient2[3] = { 0.1,0.1,0.4 };
 	float diffuse2[3] = { 0,0,0.6 };
-	float specular2[3] = { 1,1,1 };
-	s2->setKr(ke);
+	float specular2[3] = { .1,.1,.1 };
+	float ke_2[3] = { 0.0155,.0155,.0155 };
+	s2->setKr(ke_2);
 	s2->setAmbient(ambient2);
 	s2->setSpecular(specular2);
 	s2->setDiffuse(diffuse2);
@@ -158,9 +167,11 @@ void Draw::RefractionTestScene(Scene *scene) {
 	Triangle *t1 = new Triangle(vec3(-1.5, -0.5, -7.0), vec3(1.5, -0.5, -2.5), vec3(0, 1.5, -4));
 	scene->shapes[0] = t1;
 	scene->shapes[0]->setTransform(transfstack.top());
-	float ambientT1[3] = { 0.0,0.0,0.5 };
+	float ambientT1[3] = { 0.0,0.0,0.25 };
 	float diffuseT1[3] = { 0.0,0.0,0.5 };
-	float specularT1[3] = { 1,1,1 };
+	float specularT1[3] = { .5,.5,.5 };
+	float kr_t[3] = { 0.1, 0.1, 0.1 };
+	t1->setKr(kr_t);
 	t1->setAmbient(ambientT1);
 	t1->setDiffuse(diffuseT1);
 	t1->setSpecular(specularT1);

@@ -20,10 +20,10 @@ public:
 	Light** lights;
 	Shape ** shapes;
 
-	vec3 lookFrom = vec3(0, 0, 0);
-	vec3 lookAt = vec3(0, 0, -1);
-	vec3 zVec = lookFrom-lookAt;
-	vec3 up = Transform::upvector(vec3(0,1,0),zVec);
+	vec3 lookFrom = vec3(0, 0.5, 2);
+	vec3 lookAt = vec3(0, 0.5, -1);
+	vec3 zVec = lookFrom - lookAt;
+	vec3 up = Transform::upvector(vec3(0, 1, 0), zVec);
 	Camera * camera = new Camera(lookFrom, lookAt, up, 40);
 	bool pathTraced = false;
 	

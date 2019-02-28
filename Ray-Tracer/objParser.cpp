@@ -32,7 +32,7 @@ void objParser::parseObj(std::string fileName, Scene *scene) {
 		if (part1 == "v") {
 			double x, y, z;
 			ss >> x >> y >> z;
-			vec3 temp(x, y, z);
+			vec3 temp(x, y - 1.5, z - 8);
 			vecList.push_back(temp);
 		}
 		else if (part1 == "f") {

@@ -26,7 +26,7 @@ using namespace std;
 
 stack<mat4> transfstack;
 
-Scene *scene = new Scene(1280, 720);
+Scene *scene = new Scene(100, 100);
 
 void mainLoop(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film, Color *color, int depth, Intersection *in) {
 	//Color defColor = Color(0, 0, 0);
@@ -39,21 +39,21 @@ void mainLoop(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film
 }
 
 
-int main() {  //int argc, const char * argv[]
+int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	
 	Draw draw = Draw();
 	//Scene *scene = new Scene(10, 10);
 	//readfile(argv[1], scene);
 	//draw.initObjects();
-    //draw.RefractionTestScene();
+    //draw.RefractionTestScene(scene);
 	//draw.SphereScene();
 	//draw.SphereScene2();
 	//draw.CornellBox();
 	//draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
 						//Caps still todo. (At extrema of cylinder, could 
 						//do ray-plane or ray-triangle intersection)
-	//draw.parsedScene();
 	draw.TestScene(scene);
+	draw.parsedScene(scene, "angel.obj");
 
 	scene->camera->u.x *= (float)scene->w / (float)scene->h;
 	scene->camera->u.y *= (float)scene->w / (float)scene->h;
