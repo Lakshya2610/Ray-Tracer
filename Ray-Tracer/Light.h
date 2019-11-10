@@ -7,6 +7,8 @@ using namespace std;
 class Light {
 public:
 	std::string name;
+	float intensity = 1;
+	void setIntensity(float _intensity) { intensity = _intensity; }
 	virtual ~Light() {};
 };
 
@@ -15,6 +17,7 @@ public:
 	std::string name = "directional";
 	Color color = Color(0, 0, 0);
 	vec3 pos = vec3(0,0,0);
+	float attenuation[3] = { 1, 0, 0 };
 
 	DirectionalLight(Color _color, vec3 _pos) {
 		color = _color;
@@ -28,6 +31,7 @@ public:
 	std::string name = "point";
 	Color color = Color(0, 0, 0);
 	vec3 pos = vec3(0, 0, 0);
+	float attenuation[3] = { 0, 1, 0 };
 	PointLight(Color _color, vec3 _pos) {
 		color = _color;
 		pos = _pos;
@@ -40,6 +44,7 @@ public:
 	string name = "area light";
 	Color color = Color(0, 0, 0);
 	vec3 pos = vec3(0, 0, 0);
+	float attenuation[3] = { 0, 0, 1 };
 	float radius = 0.0;
 	vec3 dirn = vec3(0,0,0);
 	Quad *q;

@@ -51,12 +51,12 @@ void Draw::CylinderTest(Scene *scene) {
 
 void Draw::TestScene(Scene *scene) {
 	transfstack.push(mat4(1.0));
-	scene->numObjects = 6;// 6 + 1 area light
+	scene->numObjects = 7;// 6 + 1 area light
 	scene->numLights = 1;
 	scene->maxDepth = 5;
 	float eKr[3] = { 0,0,0 };
-	float atten[3] = { 0,0.555,0 };//.155(2)
-	scene->setAttenuation(atten);
+	// float atten[3] = { 0,0.555,0 };//.155(2)
+	// scene->setAttenuation(atten);
 
 	Sphere *trans = new Sphere(vec3(2.5, -1.25, -7.65), .6);
 	trans->setTransform(transfstack.top());
@@ -112,7 +112,7 @@ void Draw::TestScene(Scene *scene) {
 	t3->setSpecular(specular);
 	scene->shapes[2] = t3;
 
-	/*Sphere *s1 = new Sphere(vec3(0, -1, -7.65), .9);
+	Sphere *s1 = new Sphere(vec3(0, -1, -7.65), .9);
 	s1->setTransform(transfstack.top());
 	float ambient1[3] = { 0.4,0.1,0.1 };
 	float diffuse1[3] = { 0.6,0,0 };
@@ -124,7 +124,7 @@ void Draw::TestScene(Scene *scene) {
 	s1->setAmbient(ambient1);
 	s1->setSpecular(specular1);
 	s1->setDiffuse(diffuse1);
-	scene->shapes[3] = s1;*/
+	scene->shapes[6] = s1;
 
 	Sphere *s2 = new Sphere(vec3(-1.7, 0, -7.65), .9);
 	s2->setTransform(transfstack.top());
@@ -138,6 +138,15 @@ void Draw::TestScene(Scene *scene) {
 	s2->setDiffuse(diffuse2);
 	scene->shapes[4] = s2;
 
+	// this is causing some issues
+	Quad *roof = new Quad(vec3(-25, 2.5, 10), vec3(25, 2.5, 10), vec3(25, 2.5, -70), vec3(-25, 2.5, -70));
+	roof->setTransform(transfstack.top());
+	roof->setAmbient(ambient);
+	roof->setDiffuse(diffuse);
+	roof->setSpecular(specular);
+	roof->setKr(eKr);
+	scene->shapes[7] = roof;
+
 	Quad *q = new Quad(vec3(-.25, 2, -6.50), vec3(.25, 2, -6.50), vec3(.25, 2, -7), vec3(-.25, 2, -7));
 	float ambient_l[3] = { 1,1,1 };
 	float kr_l[3] = { 0,0,0 };
@@ -146,6 +155,7 @@ void Draw::TestScene(Scene *scene) {
 	q->setAmbient(ambient_l);
 	scene->shapes[5] = q;
 	AreaLight *a = new AreaLight(Color(1, 1, 1), q);
+	a->setIntensity(8);
 	scene->lights[0] = a;
 
 	/*DirectionalLight *lx = new DirectionalLight(Color(1, 1, 1), vec3(4, 1, -5));
@@ -208,8 +218,6 @@ void Draw::RefractionTestScene(Scene *scene) {
 void Draw::initObjects(Scene *scene) {
 	transfstack.push(mat4(1.0));
 	scene->maxDepth = 6;
-	float atten[3] = { 0,0.25,0 };
-	scene->setAttenuation(atten);
 
 	float kr[3] = { 0.25,0.25,0.25 };
 
@@ -511,8 +519,6 @@ void Draw::TestScene2(Scene *scene) {
 void Draw::CornellBox(Scene *scene) {
 	transfstack.push(mat4(1.0));
 	scene->numObjects = 13; //12 + 1
-	float atten[3] = { 0,1.2,0 };
-	scene->setAttenuation(atten);
 	scene->maxDepth = 0;
 
 	Triangle *t1 = new Triangle(vec3(-2.5, -1.5, -10), vec3(2.5, -1.5, -10), vec3(2.5, 2, -10));

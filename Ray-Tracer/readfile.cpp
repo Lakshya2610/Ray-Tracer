@@ -229,7 +229,7 @@ void readfile(const char* filename, Scene *scene) {
 					_a[0] = values[0];
 					_a[1] = values[1];
 					_a[2] = values[2];
-					scene->setAttenuation(_a);
+					// scene->setAttenuation(_a);
 				}
 
 			}

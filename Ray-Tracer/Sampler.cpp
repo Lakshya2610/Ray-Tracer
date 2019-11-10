@@ -13,7 +13,7 @@ bool Sampler::getSample(Sample * sample) {
 		mut.lock();
 		*sample = Sample(currentPixel%width + 0.5, currentPixel / width + 0.5);
 		currentPixel++;
-		if (currentPixel % 100 == 0) {
+		if (currentPixel % 10000 == 0) {
 			printf("pixels drawn: %d / %d\n", currentPixel, pixels);
 		}
 		mut.unlock();

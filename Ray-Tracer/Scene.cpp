@@ -59,23 +59,23 @@ bool Scene::checkBoundingBoxIntersections(Ray &ray, float *tHit, Intersection *i
 
 bool Scene::intersectP(Ray &ray, Shape *shape) {
 	float threshold = 0.0001; 
-	float *t = new float(0);
+	//float *t = new float(0);
 	LocalGeo *local = new LocalGeo(Point(), Normal());
 	ray.pos += threshold*ray.direction;
 
 	for (int i = 0; i < numObjects; i++) {
-		*t = 0;
+		//*t = 0;
 		*local = LocalGeo(Point(), Normal());
 		if (shapes[i] != shape) {
 			if ((shapes[i]->intersectP(ray)) && (!shapes[i]->isLight)) { 
-				delete t;
+				//delete t;
 				delete local;
 				return true;
 			}
 		}
 	}
 
-	delete t;
+	//delete t;
 	delete local;
 	return false;
 }
@@ -120,25 +120,31 @@ void Scene::frensel(LocalGeo local, Ray ray, Intersection in,float &kr) {
 		c1 = fabsf(c1);
 		float rs = ((n2*c1) - (n1*cost)) / ((n2*c1) + (n1*cost)); //  R||
 		float rp = ((n1*c1) - (n2*cost)) / ((n1*c1) + (n2*cost)); //  R_|_
-		kr = (pow(rs, 2) + pow(rp, 2)) / 2.0;  //kt = 1 - kr | kr->reflected part | kt -> refracted/transmitted part
+		kr = (pow(rs, 2) + pow(rp, 2)) / 2.0;  //kt = 1 - kr | kr->reflected part, kt -> refracted/transmitted part
 	}
 }
 
-vec3 Scene::getRandomPointOnQuad(Quad *quad) {//buggy!!
+vec3 Scene::getRandomPointOnQuad(Quad *quad, std::default_random_engine generator) {//buggy!!
 	objParser parser;
 	float* extremes;
 	vec3 ret = vec3(0, 0, 0);
 	extremes = parser.extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4);
-	ret.x = extremes[0] + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (extremes[3] - extremes[0])));
-	ret.y = extremes[1] + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (extremes[4] - extremes[1])));
-	ret.z = extremes[2] + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (extremes[5] - extremes[2])));
+	// establish boudries for x, y, z values
+	std::uniform_real_distribution<float> distribX(extremes[0], extremes[3]);
+	std::uniform_real_distribution<float> distribY(extremes[1], extremes[4]);
+	std::uniform_real_distribution<float> distribZ(extremes[2], extremes[5]);
+	// generate random values
+	ret.x = distribX(generator);
+	ret.y = distribY(generator);
+	ret.z = distribZ(generator);
 	return ret;
 }
 
 Ray* Scene::getShadowRays(vec3 mypos, AreaLight *light) {
 	/*
 	Returns shadow rays for area light. Manually picking uniformly distributed 
-	points on the light right now.
+	points on the light right now. Randomized selection method doesn't work right
+	now
 	*/
 	Ray shadowRays[17];
 
@@ -166,8 +172,6 @@ Ray* Scene::getShadowRays(vec3 mypos, AreaLight *light) {
 
 	return shadowRays;
 }
-
-//std::mutex shadowMutex;
 
 Color Scene::findColor(Intersection *in) {
 	Color color = Color(0, 0, 0);
@@ -198,7 +202,7 @@ Color Scene::findColor(Intersection *in) {
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
 			vec3 halfvec = glm::normalize(eyedirn + direction);
 			float distance = glm::distance(lightposn, mypos);
-			float attenFactor = 1.0f / (attenuation[0] + attenuation[1] * distance + attenuation[2] * pow(distance, 2));
+			float attenFactor = 1.0f / (light->attenuation[0] + (light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
 
 			//shadows
 			Ray shadowRay = Ray(mypos,lightposn-mypos,distance,0,0);
@@ -206,9 +210,9 @@ Color Scene::findColor(Intersection *in) {
 			if (!intersectP(shadowRay, in->shape)) {
 				Color pointColor = computeLight(direction, lightColor, normal, halfvec, in->shape); 
 
-				color.r += pointColor.r*attenFactor;
-				color.g += pointColor.g*attenFactor;
-				color.b += pointColor.b*attenFactor;
+				color.r += pointColor.r * attenFactor * light->intensity;
+				color.g += pointColor.g * attenFactor * light->intensity;
+				color.b += pointColor.b * attenFactor * light->intensity;
 			}
 		}
 		if (dynamic_cast<DirectionalLight*>(lights[i]) != 0) {
@@ -218,17 +222,17 @@ Color Scene::findColor(Intersection *in) {
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
 			vec3 halfvec = glm::normalize(eyedirn + direction);
 			float distance = glm::distance(lightposn, mypos);
-			float attenFactor = 1.0f / (attenuation[0] + attenuation[1] * distance + attenuation[2] * pow(distance, 2));
-			
+			float attenFactor = 1.0f / (light->attenuation[0] + (light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
+
 			//shadows
 			Ray shadowRay = Ray(mypos,lightposn - mypos, INFINITY, 0, 0); //how to incorporate shadows(and lights) due refracive surfaces? TODO.
 
 			if(!intersectP(shadowRay, in->shape)) {//
 				Color pointColor = computeLight(direction, lightColor, normal, halfvec, in->shape);
 
-				color.r += pointColor.r*attenFactor;
-				color.g += pointColor.g*attenFactor;
-				color.b += pointColor.b*attenFactor;
+				color.r += pointColor.r * attenFactor * light->intensity;
+				color.g += pointColor.g * attenFactor * light->intensity;
+				color.b += pointColor.b * attenFactor * light->intensity;
 			}
 		}
 		if (dynamic_cast<AreaLight*>(lights[i]) != 0) {
@@ -238,21 +242,23 @@ Color Scene::findColor(Intersection *in) {
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
 			vec3 halfvec = glm::normalize(eyedirn + direction);
 			float distance = glm::distance(lightposn, mypos);
-			float attenFactor = 1.0f / (attenuation[0] + attenuation[1] * distance + attenuation[2] * pow(distance, 2));
+			float attenFactor = 1.0f / (light->attenuation[0] + (light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
 			//float attenFactor = (distance*0.85);
 
 			//shadows
 
 			Color pointColor = computeLight(direction, lightColor, normal, halfvec, in->shape);
 			float cf = 1.0f / 17.0f; //no. of sample points for soft shadow tests(denom). multiplied to each unshadowed part
+			// engine to generate random vals for soft shadows
+			std::default_random_engine generator;
 			if (false) {
 				for (unsigned int i = 0; i < 17; i++) {
-					vec3 randomPoint = getRandomPointOnQuad(light->q);
+					vec3 randomPoint = getRandomPointOnQuad(light->q, generator);
 					Ray shadowRayTest = Ray(mypos, randomPoint - mypos, INFINITY, 0, 0);
 					if (!intersectP(shadowRayTest, in->shape)) {
-						color.r += cf * pointColor.r*attenFactor;
-						color.g += cf * pointColor.g*attenFactor;
-						color.b += cf * pointColor.b*attenFactor;
+						color.r += cf * pointColor.r * attenFactor * light->intensity;
+						color.g += cf * pointColor.g * attenFactor * light->intensity;
+						color.b += cf * pointColor.b * attenFactor * light->intensity;
 					}
 				}
 			} // disabled for now. Doesn't work right now.
@@ -260,9 +266,9 @@ Color Scene::findColor(Intersection *in) {
 				Ray* shadowRays = getShadowRays(mypos, light);
 				for (unsigned int i = 0; i < 17; i++) {
 					if (!intersectP(shadowRays[i], in->shape)) {
-						color.r += cf * pointColor.r*attenFactor;
-						color.g += cf * pointColor.g*attenFactor;
-						color.b += cf * pointColor.b*attenFactor;
+						color.r += cf * pointColor.r * attenFactor * light->intensity;
+						color.g += cf * pointColor.g * attenFactor * light->intensity;
+						color.b += cf * pointColor.b * attenFactor * light->intensity;
 					}
 				}
 			}
@@ -270,31 +276,6 @@ Color Scene::findColor(Intersection *in) {
 	}
 
 	return color;
-}
-
-std::mutex aoMutex;
-
-// Doesn't work right now
-int Scene::ambientOcculsionFactor(Intersection *in) {
-	vec3 newPos = vec3(in->localGeo->point.p.x / in->localGeo->point.p.w, in->localGeo->point.p.y / in->localGeo->point.p.w, in->localGeo->point.p.z / in->localGeo->point.p.w);
-	float validDist = 1;
-	float count = 0;
-	float *tHit = new float(INFINITY);
-	for (int i = 0; i < 10; i++) {
-		vec3 newDir = uniformSampleHemisphere(in->localGeo->normal.p); //random dir. for intersection tests
-		Ray aoRay = Ray(newPos, newDir, INFINITY, 0, *tHit);
-		if (intersectP(aoRay,in->shape)) {
-			aoMutex.lock();
-			count += aoRay.t <= validDist ? 1 : 0; //if within valid range, increase hit count
-			aoMutex.unlock();
-		}
-	}
-	delete tHit;
-	aoMutex.lock();
-	if (count < 1) { count = 1; }
-	aoMutex.unlock();
-	if (count > 1) { return 0.5*count; }
-	else { return count; }
 }
 
 void Scene::rayTrace(Ray &ray, int depth, Color *color, Intersection *in) {
@@ -340,7 +321,7 @@ void Scene::rayTrace(Ray &ray, int depth, Color *color, Intersection *in) {
 			}
 	}
 	else {
-		*color = Color(0, 0, 0);//0.529412, 0.8078431, 0.9803922//sky color
+		*color = Color(0, 0, 0); //0.529412, 0.8078431, 0.9803922 ~sky color
 	}
 	//delete in->shape;
 	delete tHit;

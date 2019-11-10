@@ -134,8 +134,8 @@ float* objParser::extremeXYZ(vec3 a, vec3 b, vec3 c) {
 
 float* objParser::extremeXYZ(vec3 a, vec3 b, vec3 c, vec3 d) {
 	/*
-	Input: 4 vectors
-	Output: array of 6 float in the order (minX,Y,Z,maxX,Y,Z)
+	Input: 4 vectors (edges of the quad)
+	Output: array of 6 float in the order (minX, Y, Z, maxX, Y, Z)
 	*/
 	float tempMinX1 = fminf(a.x, b.x);
 	float tempMinX2 = fminf(c.x, d.x);

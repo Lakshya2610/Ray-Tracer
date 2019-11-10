@@ -21,16 +21,19 @@
 #include <thread>
 using namespace std;
 
-#define SUPER_SAMPLE false		//Supersample generated image or not.
+#define SUPER_SAMPLE true		//Supersample generated image or not.
 #define MULTI_THREADED true		//To enable or disable multi-threading.
 
 stack<mat4> transfstack;
 
-Scene *scene = new Scene(1280, 720);
+Scene *scene = new Scene(3840, 2160);
 
 void mainLoop(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film, Color *color, int depth, Intersection *in) {
 	//Color defColor = Color(0, 0, 0);
 	while (sampler.getSample(sample)) {
+		if ((sample->x - 0.5) == scene->w && (sample->y - 0.5) == scene->h) {
+			continue;
+		}
 		film.commit(*sample, Color(0, 0, 0));			  // default black
 		scene->camera->generateRay(*sample, ray, film);   // generates ray for ray tracing
 		scene->rayTrace(*ray, depth, color, in);		  // returns color for the current sample
@@ -50,10 +53,10 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	//draw.SphereScene2();
 	//draw.CornellBox();
 	//draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
-						//Caps still todo. (At extrema of cylinder, could 
-						//do ray-plane or ray-triangle intersection)
+						     //Caps still todo. (At extrema of cylinder, could 
+						     //do ray-plane or ray-triangle intersection)
 	draw.TestScene(scene);
-	draw.parsedScene(scene, "angel.obj");
+	//draw.parsedScene(scene, "angel.obj");
 
 	scene->camera->u.x *= (float)scene->w / (float)scene->h;
 	scene->camera->u.y *= (float)scene->w / (float)scene->h;
@@ -64,12 +67,12 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	const size_t numThreads = MULTI_THREADED ? std::thread::hardware_concurrency() - 1 : 0;
 
 	// variables for each thread to allow for independent calculations
-	Sample *samples[15];
-	Color *colors[15];
-	Ray *rays[15];
-	int depthsPerThread[15];
-	Intersection *intersections[15];
-	std::thread threads[15];
+	Sample *samples[24];
+	Color *colors[24];
+	Ray *rays[24];
+	int depthsPerThread[24];
+	Intersection *intersections[24];
+	std::thread threads[24];
 
 	for (int i = 0; i < numThreads; i++) {
 		samples[i] = new Sample(0.0, 0.0);
