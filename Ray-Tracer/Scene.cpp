@@ -182,7 +182,6 @@ Color Scene::findColor(Intersection *in) {
 	vec3 eyedirn = glm::normalize(eyepos - mypos);
 	vec4 _normal = glm::transpose(glm::inverse(in->shape->transform)) * vec4(in->localGeo->normal.p, 0);
 	vec3 normal = glm::normalize(vec3(_normal.x, _normal.y, _normal.z));
-	float aoFactor = 0.0;
 
 	// add ambient
 	color.r += in->shape->ambient[0];
@@ -202,7 +201,8 @@ Color Scene::findColor(Intersection *in) {
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
 			vec3 halfvec = glm::normalize(eyedirn + direction);
 			float distance = glm::distance(lightposn, mypos);
-			float attenFactor = 1.0f / (light->attenuation[0] + (light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
+			float attenFactor = (1.0f * light->intensity) / (light->attenuation[0] + (light->attenuation[1] * distance) 
+				+ (light->attenuation[2] * pow(distance, 2)));
 
 			//shadows
 			Ray shadowRay = Ray(mypos,lightposn-mypos,distance,0,0);
@@ -222,7 +222,8 @@ Color Scene::findColor(Intersection *in) {
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
 			vec3 halfvec = glm::normalize(eyedirn + direction);
 			float distance = glm::distance(lightposn, mypos);
-			float attenFactor = 1.0f / (light->attenuation[0] + (light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
+			float attenFactor = (1.0f * light->intensity) / (light->attenuation[0] + (light->attenuation[1] * distance) 
+				+ (light->attenuation[2] * pow(distance, 2)));
 
 			//shadows
 			Ray shadowRay = Ray(mypos,lightposn - mypos, INFINITY, 0, 0); //how to incorporate shadows(and lights) due refracive surfaces? TODO.
@@ -242,16 +243,16 @@ Color Scene::findColor(Intersection *in) {
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
 			vec3 halfvec = glm::normalize(eyedirn + direction);
 			float distance = glm::distance(lightposn, mypos);
-			float attenFactor = 1.0f / (light->attenuation[0] + (light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
+			float attenFactor = (1.0f * light->intensity) / (light->attenuation[0] + 
+				(light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
 			//float attenFactor = (distance*0.85);
 
 			//shadows
 
 			Color pointColor = computeLight(direction, lightColor, normal, halfvec, in->shape);
 			float cf = 1.0f / 17.0f; //no. of sample points for soft shadow tests(denom). multiplied to each unshadowed part
-			// engine to generate random vals for soft shadows
-			std::default_random_engine generator;
 			if (false) {
+				std::default_random_engine generator;
 				for (unsigned int i = 0; i < 17; i++) {
 					vec3 randomPoint = getRandomPointOnQuad(light->q, generator);
 					Ray shadowRayTest = Ray(mypos, randomPoint - mypos, INFINITY, 0, 0);
@@ -327,44 +328,6 @@ void Scene::rayTrace(Ray &ray, int depth, Color *color, Intersection *in) {
 	delete tHit;
 	//delete in->localGeo;
 	//delete in;
-}
-
-vec3 Scene::uniformSampleHemisphere(vec3 normal) {
-	float u = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	float v = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
-	float theta = 2.0f * pi * u;
-	float phi = acos((2.0f * v) - 1.0f);
-	float cosTheta = cos(theta);
-	float sinTheta = sin(theta);
-	float cosPhi = cos(phi);
-	float sinPhi = sin(phi);
-	vec3 dir = vec3(cosTheta * sinPhi, sinTheta * sinPhi, cosPhi);
-	if (glm::dot(normal, dir) < 0) { dir = -dir; }
-	return dir;
-}
-
-Color Scene::pathTrace(Intersection *in, unsigned int depth) {
-	if (depth > 2) {
-		return Color(0, 0, 0);
-	}
-	float *tHit = new float(INFINITY);
-	vec3 newPos = vec3(in->localGeo->point.p.x, in->localGeo->point.p.y, in->localGeo->point.p.z);
-	Color color = Color(0, 0, 0);
-	int avg = 0;
-	for (int i = 0; i < 5; i++) {
-		vec3 newDir = uniformSampleHemisphere(newPos);
-		Ray newRay = Ray(newPos, newDir, INFINITY, 0, 0);
-		if (intersect(newRay, tHit, in)) {
-			++avg;
-			color.r += in->shape->emission[0];
-			color.g += in->shape->emission[1];
-			color.b += in->shape->emission[2];
-			color = color + pathTrace(in, depth + 1);
-		}
-	}
-	delete tHit;
-	return (color / (float)avg);
 }
 
 Color Scene::computeLight(vec3 direction, vec3 lightColor, vec3 normal, vec3 halfvec, Shape *shape) {

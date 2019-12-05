@@ -19,16 +19,32 @@
 #include "test_scenes.h"
 #include <mutex>
 #include <thread>
+#include "GL/glew.h"
+#include "GL/glut.h"
+
 using namespace std;
 
-#define SUPER_SAMPLE true		//Supersample generated image or not.
+#define SUPER_SAMPLE false		//Supersample generated image or not.
 #define MULTI_THREADED true		//To enable or disable multi-threading.
 
 stack<mat4> transfstack;
 
-Scene *scene = new Scene(3840, 2160);
+Scene *scene = new Scene(1280, 720);
+Film film = Film(scene->w, scene->h, SUPER_SAMPLE);
 
-void mainLoop(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film, Color *color, int depth, Intersection *in) {
+/* Render the frame on screen with updated pixel values */
+void renderFrame() {
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDrawPixels(scene->w, scene->h, GL_BGR, GL_FLOAT, film.pixelsArray);
+	glFlush();
+}
+
+/* 
+   Main rendering method that renders the scene pixel by pixel and 
+   notifies OpenGL to update the frame on-screen
+*/
+void renderScene(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film, Color *color, int depth, Intersection *in) {
 	//Color defColor = Color(0, 0, 0);
 	while (sampler.getSample(sample)) {
 		if ((sample->x - 0.5) == scene->w && (sample->y - 0.5) == scene->h) {
@@ -37,25 +53,45 @@ void mainLoop(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film
 		film.commit(*sample, Color(0, 0, 0));			  // default black
 		scene->camera->generateRay(*sample, ray, film);   // generates ray for ray tracing
 		scene->rayTrace(*ray, depth, color, in);		  // returns color for the current sample
-		film.commit(*sample, *color);					  // fill in the color 
+		film.commit(*sample, *color);					  // fill in the color
+		glutPostRedisplay();
 	}
+}
+
+/* Initialize OpenGL state */
+void initOpenGLWindow() {
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+	glutInitWindowSize(scene->w, scene->h);
+	glutInitWindowPosition(200, 200);
+	glutCreateWindow("Simple Window");
 }
 
 
 int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	
+	// setup scene for rendering
 	Draw draw = Draw();
 	//Scene *scene = new Scene(10, 10);
 	//readfile(argv[1], scene);
-	//draw.initObjects();
+	draw.initObjects(scene);
     //draw.RefractionTestScene(scene);
-	//draw.SphereScene();
+	// draw.SphereScene(scene);
 	//draw.SphereScene2();
 	//draw.CornellBox();
 	//draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
 						     //Caps still todo. (At extrema of cylinder, could 
 						     //do ray-plane or ray-triangle intersection)
-	draw.TestScene(scene);
+	//draw.TestScene(scene);
+
+	glutInit(&argc, (char **)argv);
+	initOpenGLWindow();
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	// invert the image
+	glPixelZoom(1.0f, -1.0f);
+	glRasterPos2f(-1, 1.0);
+
+
 	//draw.parsedScene(scene, "angel.obj");
 
 	scene->camera->u.x *= (float)scene->w / (float)scene->h;
@@ -81,29 +117,20 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 		depthsPerThread[i] = 0;
 		intersections[i] = new Intersection();
 	}
-	cout << "Calculations is being done on " << numThreads + 1 << " Threads" << "\n";
-
-	// variable for our main (control) thread
-	Sample * sample_main = new Sample(0.0, 0.0);
+	cout << "Calculations is being done on " << numThreads << " Threads" << "\n";
 
 	Sampler sampler = Sampler(scene->w, scene->h);
-	Film film = Film(scene->w, scene->h, SUPER_SAMPLE);
-
-	Color *color_main = new Color(0, 0, 0);
-
-	Ray *ray_main = new Ray(vec3(0, 0, 0), vec3(0, 0, 0), 100, 0, 0); 
-
-	int depth_main = 0, depth_t = 0;
-	Intersection *in_main = new Intersection();
+	int depth_t = 0;
 	Intersection *in_t = new Intersection();
 
 	// call our main loop from each thread
 	for (int i = 0; i < numThreads; i++) {
-		threads[i] = std::thread(mainLoop, samples[i], sampler, rays[i], scene,
+		threads[i] = std::thread(renderScene, samples[i], sampler, rays[i], scene,
 			film, colors[i], depthsPerThread[i], intersections[i]);
 	}
 
-	mainLoop(sample_main, sampler, ray_main, scene, film, color_main, depth_main, in_main);
+	glutDisplayFunc(renderFrame);
+	glutMainLoop();
 	// wait for all threads to finish
 	for (int i = 0; i < numThreads; i++) {
 		threads[i].join();
@@ -112,10 +139,6 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	film.writeToImage(); // outputs image
 
 	// clear the memory and finish
-	delete sample_main;
-	delete ray_main;
-	delete color_main;
-	delete in_main;
 	delete in_t;
 	for (int i = 0; i < numThreads; i++) {
 		delete samples[i];
@@ -134,4 +157,6 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	delete scene;
 
 	getchar();  //keep window alive
+
+	return 0;
 }

@@ -222,7 +222,7 @@ void Draw::initObjects(Scene *scene) {
 	float kr[3] = { 0.25,0.25,0.25 };
 
 	Sphere *s = new Sphere(vec3(-2, 2, -15), 1);   //(vec3(-0.50, 0.5, -0.08), 0.23)
-	scene->numObjects = 7;
+	scene->numObjects = 5;
 	scene->shapes[2] = s;
 	scene->shapes[2]->setTransform(transfstack.top());
 	float diffuse0[3] = { 1.0,1.0,0 };
@@ -295,7 +295,7 @@ void Draw::initObjects(Scene *scene) {
 	scene->shapes[4] = base;
 
 	//DirectionalLight *light = new DirectionalLight(Color(1, 1, 1), vec3(-0.57735027, 0.57735027, 0.57735027));
-	scene->numLights = 1;
+	scene->numLights = 2;
 	Quad *q = new Quad(vec3(-1, 4.75, -10), vec3(1, 4.75, -10), vec3(1, 4.75, -12), vec3(-1, 4.75, -12));
 	float ambient_l[3] = { 1,1,1 };
 	float kr_l[3] = { 0,0,0 };
@@ -305,8 +305,9 @@ void Draw::initObjects(Scene *scene) {
 	q->setLight(true);
 	scene->shapes[5] = q;
 	AreaLight *a = new AreaLight(Color(1, 1, 1), q);
-	scene->lights[0] = a;
+	//scene->lights[0] = a;
 
+	/*
 	Quad *q2 = new Quad(vec3(-4, 6, -22.5), vec3(-2.5, 7.5, -22.5), vec3(-2.5, 7.5, -24.5), vec3(-4, 6, -24.5));
 	q2->setTransform(transfstack.top());
 	q2->setKr(kr_l);
@@ -315,11 +316,13 @@ void Draw::initObjects(Scene *scene) {
 	scene->shapes[6] = q2;
 	AreaLight *a2 = new AreaLight(Color(1, 1, 1), q2);
 	scene->lights[1] = a2;
-	//scene->lights[0] = light;
-	//DirectionalLight *light1 = new DirectionalLight(Color(0, 0, 1), vec3(-0.57735027, -0.57735027, 0.57735027));
-	//scene->lights[1] = light1;
-	//DirectionalLight *light2 = new DirectionalLight(Color(1, 1, 1), vec3(-1, 3, -5));
-	//scene->lights[2] = light2;
+	*/
+	PointLight *light1 = new PointLight(Color(0.1, 0.1, 0.9), vec3(-0.57735027, -0.57735027, 0.57735027));
+	light1->setIntensity(2.2);
+	scene->lights[0] = light1;
+	PointLight *light2 = new PointLight(Color(0.9, 0.9, 0.9), vec3(-5, 3, -16));
+	light2->setIntensity(2.2);
+	scene->lights[1] = light2;
 
 }
 

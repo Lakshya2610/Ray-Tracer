@@ -10,6 +10,7 @@ private:
 public:
 	int w, h;
 	bool isSuperSampled = false;
+	float* pixelsArray;
 	Film(int,int,bool);
 	void commit(Sample sample, Color color);
 	void writeToImage();

@@ -10,6 +10,12 @@ Film::Film(int _w,int _h,bool _isSuperSampled) {
 	w = _w;
 	h = _h;
 	isSuperSampled = _isSuperSampled;
+	pixelsArray = new float[_w * _h * 3];
+
+	for (unsigned int i = 0; i < _w * _h; i++) {
+		pixels[i] = (unsigned char) 0.0f;
+		pixelsArray[i] = 0.0f;
+	}
 }
 
 unsigned char Film::getPixel(int i) {
@@ -29,6 +35,11 @@ void Film::commit(Sample sample, Color color) {
 	pixels[i] = (unsigned char)(color.b * 255);
 	pixels[i + 1] = (unsigned char)(color.g * 255);
 	pixels[i + 2] = (unsigned char)(color.r * 255);
+
+	pixelsArray[i] = color.b;
+	pixelsArray[i + 1] = color.g;
+	pixelsArray[i + 2] = color.r;
+
 	//mut1.unlock();
 }
 

@@ -14,7 +14,7 @@ public:
 	int max_vertices = 0;
 	vec3 vertices[1000000];
 	int current_vertex = 0;
-	int maxDepth = 2;
+	int maxDepth = 10;
 	float f1 = 0.1;
 	// float attenuation[3] = { 1,0,0 };
 
@@ -46,10 +46,6 @@ public:
 	vec3 static getRandomPointOnQuad(Quad *quad, std::default_random_engine generator);
 	// main recursive ray tracing method
 	void rayTrace(Ray &ray, int depth, Color *color, Intersection *in);
-	// Experimental methods based on uniform sampled hemisphere. 
-	// Not being used anywhere right now.
-	Color pathTrace(Intersection *in, unsigned int depth);
-	vec3 uniformSampleHemisphere(vec3 point);
 	// methods for calculating reflections and refractions
 	void frensel(LocalGeo local, Ray ray, Intersection in,float &kr);
 	static Ray createReflectedRay(LocalGeo local, Ray ray);
