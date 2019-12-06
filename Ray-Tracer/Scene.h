@@ -21,11 +21,13 @@ public:
 	Light** lights;
 	Shape ** shapes;
 
-	vec3 lookFrom = vec3(0, 0.5, 1.25);
-	vec3 lookAt = vec3(0, 0.5, -1);
+	vec3 lookFrom = vec3(0, -0.5, 2.25);
+	vec3 lookAt = vec3(0, -0.5, 0);
 	vec3 zVec = lookFrom - lookAt;
 	vec3 up = Transform::upvector(vec3(0, 1, 0), zVec);
-	Camera * camera = new Camera(lookFrom, lookAt, up, 40);
+	float fov = 40;
+	Camera * camera = new Camera(lookFrom, lookAt, up, fov);
+	Color defaultColor = Color(0, 0, 0);
 	bool pathTraced = false;
 	
 	Scene(int _w, int _h) {
@@ -58,6 +60,8 @@ public:
 	float mod(vec4 vector) {
 		return sqrtf(pow(vector.x, 2) + pow(vector.y, 2) + pow(vector.z, 2));
 	}
+
+	void updateCamera();
 
 	// shading algoritm based on lambert and phong shading formulas.
 	Color computeLight(vec3 direction,vec3 lightColor,vec3 normal,vec3 halfvec,Shape *shape);

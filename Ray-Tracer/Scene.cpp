@@ -56,7 +56,6 @@ bool Scene::checkBoundingBoxIntersections(Ray &ray, float *tHit, Intersection *i
 	return hit;
 }
 
-
 bool Scene::intersectP(Ray &ray, Shape *shape) {
 	float threshold = 0.0001; 
 	//float *t = new float(0);
@@ -148,27 +147,29 @@ Ray* Scene::getShadowRays(vec3 mypos, AreaLight *light) {
 	*/
 	Ray shadowRays[17];
 
-	vec3 midpoint1 = (light->q->v1 + light->q->v2) / 2.0;
-	vec3 midpoint2 = ((light->q->v2 + light->q->v3) / 2.0);
-	vec3 midpoint3 = ((light->q->v3 + light->q->v4) / 2.0);
-	vec3 midpoint4 = ((light->q->v1 + light->q->v4) / 2.0);
-	shadowRays[0] = Ray(mypos, light->q->v1 - mypos, INFINITY, 0, 0);
-	shadowRays[1] = Ray(mypos, light->q->v2 - mypos, INFINITY, 0, 0);
-	shadowRays[2] = Ray(mypos, light->q->v3 - mypos, INFINITY, 0, 0);
-	shadowRays[3] = Ray(mypos, light->q->v4 - mypos, INFINITY, 0, 0);
+	Quad* sourcePolygon = (Quad*)light->q;
+
+	vec3 midpoint1 = (sourcePolygon->v1 + sourcePolygon->v2) / 2.0;
+	vec3 midpoint2 = ((sourcePolygon->v2 + sourcePolygon->v3) / 2.0);
+	vec3 midpoint3 = ((sourcePolygon->v3 + sourcePolygon->v4) / 2.0);
+	vec3 midpoint4 = ((sourcePolygon->v1 + sourcePolygon->v4) / 2.0);
+	shadowRays[0] = Ray(mypos, sourcePolygon->v1 - mypos, INFINITY, 0, 0);
+	shadowRays[1] = Ray(mypos, sourcePolygon->v2 - mypos, INFINITY, 0, 0);
+	shadowRays[2] = Ray(mypos, sourcePolygon->v3 - mypos, INFINITY, 0, 0);
+	shadowRays[3] = Ray(mypos, sourcePolygon->v4 - mypos, INFINITY, 0, 0);
 	shadowRays[4] = Ray(mypos, light->pos - mypos, INFINITY, 0, 0);
 	shadowRays[5] = Ray(mypos, midpoint1 - mypos, INFINITY, 0, 0);
 	shadowRays[6] = Ray(mypos, midpoint2 - mypos, INFINITY, 0, 0);
 	shadowRays[7] = Ray(mypos, midpoint3 - mypos, INFINITY, 0, 0);
 	shadowRays[8] = Ray(mypos, midpoint4 - mypos, INFINITY, 0, 0);
-	shadowRays[9] = Ray(mypos, ((light->q->v1 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[10] = Ray(mypos, ((light->q->v2 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[11] = Ray(mypos, ((light->q->v2 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[12] = Ray(mypos, ((light->q->v3 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[13] = Ray(mypos, ((light->q->v3 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[14] = Ray(mypos, ((light->q->v4 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[15] = Ray(mypos, ((light->q->v1 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[16] = Ray(mypos, ((light->q->v4 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[9] = Ray(mypos, ((sourcePolygon->v1 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[10] = Ray(mypos, ((sourcePolygon->v2 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[11] = Ray(mypos, ((sourcePolygon->v2 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[12] = Ray(mypos, ((sourcePolygon->v3 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[13] = Ray(mypos, ((sourcePolygon->v3 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[14] = Ray(mypos, ((sourcePolygon->v4 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[15] = Ray(mypos, ((sourcePolygon->v1 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
+	shadowRays[16] = Ray(mypos, ((sourcePolygon->v4 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
 
 	return shadowRays;
 }
@@ -254,7 +255,7 @@ Color Scene::findColor(Intersection *in) {
 			if (false) {
 				std::default_random_engine generator;
 				for (unsigned int i = 0; i < 17; i++) {
-					vec3 randomPoint = getRandomPointOnQuad(light->q, generator);
+					vec3 randomPoint = getRandomPointOnQuad((Quad*)light->q, generator);
 					Ray shadowRayTest = Ray(mypos, randomPoint - mypos, INFINITY, 0, 0);
 					if (!intersectP(shadowRayTest, in->shape)) {
 						color.r += cf * pointColor.r * attenFactor * light->intensity;
@@ -322,7 +323,7 @@ void Scene::rayTrace(Ray &ray, int depth, Color *color, Intersection *in) {
 			}
 	}
 	else {
-		*color = Color(0, 0, 0); //0.529412, 0.8078431, 0.9803922 ~sky color
+		*color = this->defaultColor; //0.529412, 0.8078431, 0.9803922 ~sky color
 	}
 	//delete in->shape;
 	delete tHit;
@@ -349,3 +350,5 @@ Color Scene::computeLight(vec3 direction, vec3 lightColor, vec3 normal, vec3 hal
 
 	return Color(lambert.r + phong.r, lambert.g + phong.g, lambert.b + phong.b);
 }
+
+void Scene::updateCamera() { this->camera = new Camera(this->lookFrom, this->lookAt, this->up, this->fov); }

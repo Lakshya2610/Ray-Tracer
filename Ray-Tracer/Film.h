@@ -15,5 +15,5 @@ public:
 	void commit(Sample sample, Color color);
 	void writeToImage();
 	unsigned char getPixel(int);
-	void superSample();
+	void superSample(float* pixels);
 };

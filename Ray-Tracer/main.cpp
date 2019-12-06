@@ -21,6 +21,7 @@
 #include <thread>
 #include "GL/glew.h"
 #include "GL/glut.h"
+#include "GL/freeglut.h"
 
 using namespace std;
 
@@ -54,7 +55,6 @@ void renderScene(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film f
 		scene->camera->generateRay(*sample, ray, film);   // generates ray for ray tracing
 		scene->rayTrace(*ray, depth, color, in);		  // returns color for the current sample
 		film.commit(*sample, *color);					  // fill in the color
-		glutPostRedisplay();
 	}
 }
 
@@ -66,6 +66,21 @@ void initOpenGLWindow() {
 	glutCreateWindow("Simple Window");
 }
 
+void cleanup() {
+
+	film.writeToImage(); // outputs image
+
+	// clear the memory and finish
+	for (int i = 0; i < scene->numObjects; i++) {
+		delete scene->shapes[i];
+	}
+	for (int i = 0; i < scene->numLights; i++) {
+		delete scene->lights[i];
+	}
+	delete[] scene->shapes;
+	delete[] scene->lights;
+	delete scene;
+}
 
 int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	
@@ -73,15 +88,15 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	Draw draw = Draw();
 	//Scene *scene = new Scene(10, 10);
 	//readfile(argv[1], scene);
-	draw.initObjects(scene);
-    //draw.RefractionTestScene(scene);
+	// draw.initObjects(scene);
+    // draw.RefractionTestScene(scene);
 	// draw.SphereScene(scene);
 	//draw.SphereScene2();
 	//draw.CornellBox();
 	//draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
 						     //Caps still todo. (At extrema of cylinder, could 
 						     //do ray-plane or ray-triangle intersection)
-	//draw.TestScene(scene);
+	// draw.TestScene(scene);
 
 	glutInit(&argc, (char **)argv);
 	initOpenGLWindow();
@@ -92,7 +107,7 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	glRasterPos2f(-1, 1.0);
 
 
-	//draw.parsedScene(scene, "angel.obj");
+	draw.parsedScene(scene, "angel.obj");
 
 	scene->camera->u.x *= (float)scene->w / (float)scene->h;
 	scene->camera->u.y *= (float)scene->w / (float)scene->h;
@@ -103,58 +118,39 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	const size_t numThreads = MULTI_THREADED ? std::thread::hardware_concurrency() - 1 : 0;
 
 	// variables for each thread to allow for independent calculations
-	Sample *samples[24];
-	Color *colors[24];
-	Ray *rays[24];
-	int depthsPerThread[24];
-	Intersection *intersections[24];
-	std::thread threads[24];
+	vector<Sample> samples;
+	vector<Color> colors;
+	vector<Ray> rays;
+	vector<int> depthsPerThread;
+	vector<Intersection> intersections;
+	vector<std::thread> threads;
 
 	for (int i = 0; i < numThreads; i++) {
-		samples[i] = new Sample(0.0, 0.0);
-		colors[i] = new Color(0, 0, 0);
-		rays[i] = new Ray(vec3(0, 0, 0), vec3(0, 0, 0), 500, 0, 0);
-		depthsPerThread[i] = 0;
-		intersections[i] = new Intersection();
+		samples.push_back(Sample(0.0, 0.0));
+		colors.push_back(Color(0, 0, 0));
+		rays.push_back(Ray(vec3(0, 0, 0), vec3(0, 0, 0), 500, 0, 0));
+		depthsPerThread.push_back(0);
+		intersections.push_back(Intersection());
 	}
 	cout << "Calculations is being done on " << numThreads << " Threads" << "\n";
 
 	Sampler sampler = Sampler(scene->w, scene->h);
-	int depth_t = 0;
-	Intersection *in_t = new Intersection();
-
+	
 	// call our main loop from each thread
 	for (int i = 0; i < numThreads; i++) {
-		threads[i] = std::thread(renderScene, samples[i], sampler, rays[i], scene,
-			film, colors[i], depthsPerThread[i], intersections[i]);
+		threads.push_back(std::thread(renderScene, &samples.at(i), sampler, &rays.at(i), scene,
+			film, &colors.at(i), depthsPerThread.at(i), &intersections.at(i)));
 	}
 
 	glutDisplayFunc(renderFrame);
+	glutIdleFunc(renderFrame);
+	glutCloseFunc(cleanup);
 	glutMainLoop();
+
 	// wait for all threads to finish
 	for (int i = 0; i < numThreads; i++) {
-		threads[i].join();
+		threads.at(i).join();
 	}
-
-	film.writeToImage(); // outputs image
-
-	// clear the memory and finish
-	delete in_t;
-	for (int i = 0; i < numThreads; i++) {
-		delete samples[i];
-		delete colors[i];
-		delete intersections[i];
-		delete rays[i];
-	}
-	for (int i = 0; i < scene->numObjects; i++) {
-		delete scene->shapes[i];
-	}
-	for (int i = 0; i < scene->numLights; i++) {
-		delete scene->lights[i];
-	}
-	delete[] scene->shapes;
-	delete[] scene->lights;
-	delete scene;
 
 	getchar();  //keep window alive
 

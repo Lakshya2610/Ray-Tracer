@@ -47,11 +47,11 @@ public:
 	float attenuation[3] = { 0, 0, 1 };
 	float radius = 0.0;
 	vec3 dirn = vec3(0,0,0);
-	Quad *q;
+	Shape *q;
 	AreaLight(Color _color, Quad *_q) {
 		color = _color;
 		q = _q;
-		pos = (q->v1 + q->v3) / 2.0;
+		pos = (((Quad*)q)->v1 + ((Quad*)q)->v3) / 2.0;
 	}
 	~AreaLight() {};
 };

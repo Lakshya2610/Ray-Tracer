@@ -39,11 +39,10 @@ void Film::commit(Sample sample, Color color) {
 	pixelsArray[i] = color.b;
 	pixelsArray[i + 1] = color.g;
 	pixelsArray[i + 2] = color.r;
-
 	//mut1.unlock();
 }
 
-void Film::superSample() { 
+void Film::superSample(float* pixels) { 
 	Color pixel1Color = Color();
 	Color pixel2Color = Color();
 	Color pixel3Color = Color();
@@ -72,7 +71,7 @@ void Film::writeToImage() {
 	FIBITMAP *img;
 	if (isSuperSampled) {
 		printf("SuperSampling...\n");
-		superSample();
+		superSample((float*) this->pixels);
 		img = FreeImage_ConvertFromRawBits(superSampledPixels, w / 2.0, h / 2.0, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
 	}
 	else {

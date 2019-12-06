@@ -1,14 +1,16 @@
 #include "test_scenes.h"
 
 void Draw::parsedScene(Scene *scene, string objFile) {
-	//scene->numLights = 1;
+	scene->numLights = 1;
 	scene->maxDepth = 2;
+	scene->defaultColor = Color(0.529412, 0.8078431, 0.9803922);
 
 	objParser parser;
 	parser.parseObj(objFile, scene);
 
-	//PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 2, 2));
-	//scene->lights[0] = p;
+	PointLight *p = new PointLight(Color(1, 1, 1), vec3(0.5, 1, 1));
+	p->setIntensity(1.5);
+	scene->lights[0] = p;
 }
 
 void Draw::CylinderTest(Scene *scene) {
@@ -53,7 +55,8 @@ void Draw::TestScene(Scene *scene) {
 	transfstack.push(mat4(1.0));
 	scene->numObjects = 7;// 6 + 1 area light
 	scene->numLights = 1;
-	scene->maxDepth = 5;
+	scene->maxDepth = 10;
+	scene->defaultColor = Color(0.529412, 0.8078431, 0.9803922);
 	float eKr[3] = { 0,0,0 };
 	// float atten[3] = { 0,0.555,0 };//.155(2)
 	// scene->setAttenuation(atten);
@@ -118,9 +121,9 @@ void Draw::TestScene(Scene *scene) {
 	float diffuse1[3] = { 0.6,0,0 };
 	float specular1[3] = { .1,.1,.1 };
 	float ke[3] = { 0.0155,.0155,.0155 };
+	// s1->setRefractive(true);
+	// s1->setReractiveIndex(1.5);
 	s1->setKr(ke);
-	//s1->setRefractive(true);
-	//s1->setReractiveIndex(1.5);
 	s1->setAmbient(ambient1);
 	s1->setSpecular(specular1);
 	s1->setDiffuse(diffuse1);
@@ -139,7 +142,7 @@ void Draw::TestScene(Scene *scene) {
 	scene->shapes[4] = s2;
 
 	// this is causing some issues
-	Quad *roof = new Quad(vec3(-25, 2.5, 10), vec3(25, 2.5, 10), vec3(25, 2.5, -70), vec3(-25, 2.5, -70));
+	Quad *roof = new Quad(vec3(-25, 2.001, 10), vec3(25, 2.001, 10), vec3(25, 2.001, -70), vec3(-25, 2.001, -70));
 	roof->setTransform(transfstack.top());
 	roof->setAmbient(ambient);
 	roof->setDiffuse(diffuse);
@@ -147,7 +150,7 @@ void Draw::TestScene(Scene *scene) {
 	roof->setKr(eKr);
 	scene->shapes[7] = roof;
 
-	Quad *q = new Quad(vec3(-.25, 2, -6.50), vec3(.25, 2, -6.50), vec3(.25, 2, -7), vec3(-.25, 2, -7));
+	Quad *q = new Quad(vec3(-.25, 2, -4.50), vec3(.25, 2, -4.50), vec3(.25, 2, -5), vec3(-.25, 2, -5));
 	float ambient_l[3] = { 1,1,1 };
 	float kr_l[3] = { 0,0,0 };
 	q->setKr(kr_l);
@@ -155,8 +158,13 @@ void Draw::TestScene(Scene *scene) {
 	q->setAmbient(ambient_l);
 	scene->shapes[5] = q;
 	AreaLight *a = new AreaLight(Color(1, 1, 1), q);
-	a->setIntensity(8);
+	a->setIntensity(4);
 	scene->lights[0] = a;
+
+	scene->lookFrom = vec3(0, 0, 1);
+	scene->lookAt = vec3(0, 0, -1);
+	scene->fov = 40;
+	scene->updateCamera();
 
 	/*DirectionalLight *lx = new DirectionalLight(Color(1, 1, 1), vec3(4, 1, -5));
 	scene->lights[2] = lx;
@@ -335,6 +343,8 @@ void Draw::SphereScene(Scene *scene) {
 	scene->lights[1] = light2;
 
 	scene->numObjects = 5;
+	scene->maxDepth = 15;
+	scene->defaultColor = Color(0, 0, 0);
 
 	Sphere *s1 = new Sphere(vec3(0, 0, -17), 2);
 	s1->setTransform(transfstack.top());
