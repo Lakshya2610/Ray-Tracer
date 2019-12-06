@@ -37,7 +37,6 @@ public:
 		lights = new Light*[maxLights];
 	}
 	// methods to check intersections
-	bool checkBoundingBoxIntersections(Ray &ray, float *tHit, Intersection *in, BoundingBox *b, int &index);
 	bool intersect(Ray &ray, float *tHit, Intersection *in);
 	bool intersectP(Ray &ray, Shape *shape);
 	// method for calculating color for a pixel

@@ -13,9 +13,6 @@ bool Scene::intersect(Ray &ray, float *tHit, Intersection *in) {
 	bool hit = false;
 	for (int i = 0; i < numObjects; i++) {
 		if (shapes[i]->intersect(ray, tHit, in->localGeo)) {//calls the particular object's intersect method
-			if (shapes[i]->isBoundingBox) {
-				hit = checkBoundingBoxIntersections(ray, tHit, in, (BoundingBox*)shapes[i], index);
-			}
 			if (_tHit >= *tHit) {
 				_tHit = *tHit;
 				_local = *(in->localGeo);
@@ -31,28 +28,6 @@ bool Scene::intersect(Ray &ray, float *tHit, Intersection *in) {
 	*tHit = _tHit;
 	*(in->localGeo) = _local;
 	//in->shape = _shape;
-	return hit;
-}
-
-bool Scene::checkBoundingBoxIntersections(Ray &ray, float *tHit, Intersection *in, BoundingBox *b, int &index) {
-	float _tHit = INFINITY;
-	LocalGeo _local = LocalGeo(Point(vec4(0, 0, 0, 1)), Normal(vec3(0, 0, 0)));
-	bool hit = false;
-	for (int i = 0; i < b->maxObjPerBoundingBox; i++) {
-		if (b->shapes[i]->intersect(ray, tHit, in->localGeo)) {
-			if (_tHit >= *tHit) {
-				_tHit = *tHit;
-				_local = *(in->localGeo);
-				in->shape = b->shapes[i];
-				index = i;
-			}
-			int o = 0;
-			o += 1;
-			hit = true;
-		}
-	}
-	*tHit = _tHit;
-	*(in->localGeo) = _local;
 	return hit;
 }
 

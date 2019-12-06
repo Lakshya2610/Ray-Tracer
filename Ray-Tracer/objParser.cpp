@@ -100,12 +100,7 @@ void objParser::parseObj(std::string fileName, Scene *scene) {
 		}
 		
 	}
-	/*box = new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
-	box->shapes = shps;
-	box->maxObjPerBoundingBox = iter;
-	box->setBoundingBox(true);
-	scene->shapes[scene->numObjects] = box;
-	++scene->numObjects;*/
+
 }
 
 float* objParser::extremeXYZ(vec3 a, vec3 b, vec3 c) {

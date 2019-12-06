@@ -30,8 +30,9 @@ using namespace std;
 
 stack<mat4> transfstack;
 
-Scene *scene = new Scene(1280, 720);
+Scene *scene = new Scene(1600, 900);
 Film film = Film(scene->w, scene->h, SUPER_SAMPLE);
+vector<std::thread> threads;
 
 /* Render the frame on screen with updated pixel values */
 void renderFrame() {
@@ -46,7 +47,6 @@ void renderFrame() {
    notifies OpenGL to update the frame on-screen
 */
 void renderScene(Sample *sample, Sampler sampler, Ray *ray, Scene *scene, Film film, Color *color, int depth, Intersection *in) {
-	//Color defColor = Color(0, 0, 0);
 	while (sampler.getSample(sample)) {
 		if ((sample->x - 0.5) == scene->w && (sample->y - 0.5) == scene->h) {
 			continue;
@@ -63,20 +63,16 @@ void initOpenGLWindow() {
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(scene->w, scene->h);
 	glutInitWindowPosition(200, 200);
-	glutCreateWindow("Simple Window");
+	glutCreateWindow("Output");
 }
 
 void cleanup() {
-
-	film.writeToImage(); // outputs image
+	try { film.writeToImage(); } // outputs image 
+	catch (const std::exception&) { cout << "Couldn't save the image"; }
 
 	// clear the memory and finish
-	for (int i = 0; i < scene->numObjects; i++) {
-		delete scene->shapes[i];
-	}
-	for (int i = 0; i < scene->numLights; i++) {
-		delete scene->lights[i];
-	}
+	for (int i = 0; i < scene->numObjects; i++) { delete scene->shapes[i]; }
+	for (int i = 0; i < scene->numLights; i++) { delete scene->lights[i]; }
 	delete[] scene->shapes;
 	delete[] scene->lights;
 	delete scene;
@@ -96,7 +92,7 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	//draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
 						     //Caps still todo. (At extrema of cylinder, could 
 						     //do ray-plane or ray-triangle intersection)
-	// draw.TestScene(scene);
+	draw.TestScene(scene);
 
 	glutInit(&argc, (char **)argv);
 	initOpenGLWindow();
@@ -107,7 +103,7 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	glRasterPos2f(-1, 1.0);
 
 
-	draw.parsedScene(scene, "angel.obj");
+	//draw.parsedScene(scene, "house.obj");
 
 	scene->camera->u.x *= (float)scene->w / (float)scene->h;
 	scene->camera->u.y *= (float)scene->w / (float)scene->h;
@@ -123,7 +119,6 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	vector<Ray> rays;
 	vector<int> depthsPerThread;
 	vector<Intersection> intersections;
-	vector<std::thread> threads;
 
 	for (int i = 0; i < numThreads; i++) {
 		samples.push_back(Sample(0.0, 0.0));

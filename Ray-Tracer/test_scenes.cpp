@@ -8,8 +8,8 @@ void Draw::parsedScene(Scene *scene, string objFile) {
 	objParser parser;
 	parser.parseObj(objFile, scene);
 
-	PointLight *p = new PointLight(Color(1, 1, 1), vec3(0.5, 1, 1));
-	p->setIntensity(1.5);
+	PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 200, 0));
+	p->setIntensity(100);
 	scene->lights[0] = p;
 }
 
@@ -225,7 +225,8 @@ void Draw::RefractionTestScene(Scene *scene) {
 
 void Draw::initObjects(Scene *scene) {
 	transfstack.push(mat4(1.0));
-	scene->maxDepth = 6;
+	scene->maxDepth = 10;
+	scene->defaultColor = Color(0.529412, 0.8078431, 0.9803922);
 
 	float kr[3] = { 0.25,0.25,0.25 };
 
@@ -250,8 +251,9 @@ void Draw::initObjects(Scene *scene) {
 	float ambient[3] = { 0.1,0.1,0.1 };       //{ 0,0.0,0.1 };
 	float specular[3] = { 1.0,1.0,1.0 };  //{ 0.8,0.2,0.0 };
 	float emission[3] = { 0,0.3,0.6 };
+	float diffused_kr[3] = { 0.01, 0.01, 0.01 };
 	s1->setShininess(50);
-	s1->setKr(kr);//{ 0,0.3,0.6 };
+	s1->setKr(diffused_kr);//{ 0,0.3,0.6 };
 	s1->setDiffuse(diffuse);
 	s1->setSpecular(specular);
 	s1->setAmbient(ambient);
@@ -264,12 +266,15 @@ void Draw::initObjects(Scene *scene) {
 	float ambient_1[3] = { 0.1,0.1,0.1 };
 	float specular_1[3] = { 1.0,1.0,1.0 };
 	float emission_1[3] = { 1,1,1 };
+	// float mirror_kr[3] = { 0.9, 0.9, 0.9 };
 	float shininess_1 = 100;
 	//s2->setShininess(shininess_1);
-	s2->setKr(kr);
+	// s2->setKr(mirror_kr);
 	s2->setDiffuse(diffuse_1);
 	s2->setSpecular(specular_1);
 	s2->setAmbient(ambient_1);
+	s2->setRefractive(true);
+	s2->setReractiveIndex(1.5);
 	//s2->setEmission(emission_1);
 
 	//Sphere *s3 = new Sphere(vec3(0, 0, -10), 1);
