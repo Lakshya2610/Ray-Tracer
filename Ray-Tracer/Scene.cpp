@@ -98,20 +98,30 @@ void Scene::frensel(LocalGeo local, Ray ray, Intersection in,float &kr) {
 	}
 }
 
-vec3 Scene::getRandomPointOnQuad(Quad *quad, std::default_random_engine generator) {//buggy!!
-	objParser parser;
-	float* extremes;
-	vec3 ret = vec3(0, 0, 0);
-	extremes = parser.extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4);
+vector<vec3> Scene::getRandomPointOnQuad(Quad *quad, int count) {//buggy!!
+	vector<vec3> randomPoints;
+	float extremes[6];
+	extremes[0] = objParser::extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4)[0];
+	extremes[1] = objParser::extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4)[1];
+	extremes[2] = objParser::extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4)[2];
+	extremes[3] = objParser::extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4)[3];
+	extremes[4] = objParser::extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4)[4];
+	extremes[5] = objParser::extremeXYZ(quad->v1, quad->v2, quad->v3, quad->v4)[5];
+
+	static std::random_device rd;
+	static std::mt19937 mt(rd());
+
 	// establish boudries for x, y, z values
 	std::uniform_real_distribution<float> distribX(extremes[0], extremes[3]);
 	std::uniform_real_distribution<float> distribY(extremes[1], extremes[4]);
 	std::uniform_real_distribution<float> distribZ(extremes[2], extremes[5]);
-	// generate random values
-	ret.x = distribX(generator);
-	ret.y = distribY(generator);
-	ret.z = distribZ(generator);
-	return ret;
+
+	// generate random values and save them in a list
+	for (unsigned int i = 0; i < count; i++) {
+		randomPoints.push_back(vec3(distribX(rd), distribY(rd), distribZ(rd)));
+	}
+
+	return randomPoints;
 }
 
 Ray* Scene::getShadowRays(vec3 mypos, AreaLight *light) {
@@ -226,19 +236,18 @@ Color Scene::findColor(Intersection *in) {
 			//shadows
 
 			Color pointColor = computeLight(direction, lightColor, normal, halfvec, in->shape);
-			float cf = 1.0f / 17.0f; //no. of sample points for soft shadow tests(denom). multiplied to each unshadowed part
-			if (false) {
-				std::default_random_engine generator;
-				for (unsigned int i = 0; i < 17; i++) {
-					vec3 randomPoint = getRandomPointOnQuad((Quad*)light->q, generator);
-					Ray shadowRayTest = Ray(mypos, randomPoint - mypos, INFINITY, 0, 0);
+			float cf = 1.0f / (float) numShadowRays; //no. of sample points for soft shadow tests(denom). multiplied to each unshadowed part
+			if (true) {
+				vector<vec3> randomPoints = getRandomPointOnQuad((Quad*)light->q, numShadowRays);
+				for (unsigned int i = 0; i < numShadowRays; i++) {
+					Ray shadowRayTest = Ray(mypos, randomPoints.at(i) - mypos, INFINITY, 0, 0);
 					if (!intersectP(shadowRayTest, in->shape)) {
 						color.r += cf * pointColor.r * attenFactor * light->intensity;
 						color.g += cf * pointColor.g * attenFactor * light->intensity;
 						color.b += cf * pointColor.b * attenFactor * light->intensity;
 					}
 				}
-			} // disabled for now. Doesn't work right now.
+			}
 			else {
 				Ray* shadowRays = getShadowRays(mypos, light);
 				for (unsigned int i = 0; i < 17; i++) {

@@ -30,7 +30,7 @@ using namespace std;
 
 stack<mat4> transfstack;
 
-Scene *scene = new Scene(1600, 900);
+Scene *scene = new Scene(1280, 720);
 Film film = Film(scene->w, scene->h, SUPER_SAMPLE);
 vector<std::thread> threads;
 
@@ -87,9 +87,9 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	// draw.initObjects(scene);
     // draw.RefractionTestScene(scene);
 	// draw.SphereScene(scene);
-	//draw.SphereScene2();
-	//draw.CornellBox();
-	//draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
+	// draw.SphereScene2();
+	// draw.CornellBox();
+	// draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
 						     //Caps still todo. (At extrema of cylinder, could 
 						     //do ray-plane or ray-triangle intersection)
 	draw.TestScene(scene);
@@ -103,7 +103,7 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	glRasterPos2f(-1, 1.0);
 
 
-	//draw.parsedScene(scene, "house.obj");
+	// draw.parsedScene(scene, "angel.obj");
 
 	scene->camera->u.x *= (float)scene->w / (float)scene->h;
 	scene->camera->u.y *= (float)scene->w / (float)scene->h;
@@ -111,7 +111,7 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	scene->pathTraced = false;
 
 	// Get the number of threads availible for calculations
-	const size_t numThreads = MULTI_THREADED ? std::thread::hardware_concurrency() - 1 : 0;
+	const size_t numThreads = MULTI_THREADED ? std::thread::hardware_concurrency() - 1 : 1;
 
 	// variables for each thread to allow for independent calculations
 	vector<Sample> samples;

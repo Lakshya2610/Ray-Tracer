@@ -10,3 +10,4 @@ typedef glm::mat3 mat3;
 
 const int maxObjects = 500000;
 const int maxLights = 100;
+const int numShadowRays = 100;

@@ -10,6 +10,6 @@
 class objParser {
 public:
 	void parseObj(std::string fileName, Scene *scene);
-	float* extremeXYZ(vec3 a, vec3 b, vec3 c);
-	float* extremeXYZ(vec3 a, vec3 b, vec3 c, vec3 d);
+	static float* extremeXYZ(vec3 a, vec3 b, vec3 c);
+	static float* extremeXYZ(vec3 a, vec3 b, vec3 c, vec3 d);
 };

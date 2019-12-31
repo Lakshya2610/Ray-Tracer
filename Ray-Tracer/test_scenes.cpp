@@ -8,8 +8,8 @@ void Draw::parsedScene(Scene *scene, string objFile) {
 	objParser parser;
 	parser.parseObj(objFile, scene);
 
-	PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 200, 0));
-	p->setIntensity(100);
+	PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 2, 3));
+	p->setIntensity(2);
 	scene->lights[0] = p;
 }
 
@@ -150,7 +150,7 @@ void Draw::TestScene(Scene *scene) {
 	roof->setKr(eKr);
 	scene->shapes[7] = roof;
 
-	Quad *q = new Quad(vec3(-.25, 2, -4.50), vec3(.25, 2, -4.50), vec3(.25, 2, -5), vec3(-.25, 2, -5));
+	Quad *q = new Quad(vec3(-.25, 5, -4.50), vec3(.25, 5, -4.50), vec3(.25, 5, -5), vec3(-.25, 5, -5)); // y was 2
 	float ambient_l[3] = { 1,1,1 };
 	float kr_l[3] = { 0,0,0 };
 	q->setKr(kr_l);
@@ -158,7 +158,7 @@ void Draw::TestScene(Scene *scene) {
 	q->setAmbient(ambient_l);
 	scene->shapes[5] = q;
 	AreaLight *a = new AreaLight(Color(1, 1, 1), q);
-	a->setIntensity(4);
+	a->setIntensity(4.5);
 	scene->lights[0] = a;
 
 	scene->lookFrom = vec3(0, 0, 1);
