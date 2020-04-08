@@ -23,7 +23,6 @@ unsigned char Film::getPixel(int i) {
 }
 
 void Film::commit(Sample sample, Color color) {
-	//mut1.lock();
 	//assign color to pixels
 	int x = (int)(sample.x - 0.5);
 	int y = (int)(sample.y - 0.5);
@@ -39,7 +38,6 @@ void Film::commit(Sample sample, Color color) {
 	pixelsArray[i] = color.b;
 	pixelsArray[i + 1] = color.g;
 	pixelsArray[i + 2] = color.r;
-	//mut1.unlock();
 }
 
 void Film::superSample(float* pixels) { 

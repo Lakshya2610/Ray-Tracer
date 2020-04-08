@@ -41,7 +41,6 @@ public:
 	bool intersectP(Ray &ray, Shape *shape);
 	// method for calculating color for a pixel
 	Color findColor(Intersection *in);
-	static Ray* getShadowRays(vec3 mypos, AreaLight *light);
 	vector<vec3> static getRandomPointOnQuad(Quad *quad, int count);
 	// main recursive ray tracing method
 	void rayTrace(Ray &ray, int depth, Color *color, Intersection *in);

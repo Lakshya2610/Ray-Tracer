@@ -59,7 +59,7 @@ Ray Scene::createReflectedRay(LocalGeo local, Ray ray) {
 }
 
 Ray Scene::createRefractedRay(LocalGeo local, Ray ray,Intersection in) {  
-	float c1 = glm::dot(vec4(local.normal.p,0), ray.direction);    //T = nI + (nc1 - c2)N
+	float c1 = glm::dot(vec4(local.normal.p,0), ray.direction);    // T = nI + (nc1 - c2)N
 	float relativeIndex = 1;
 	if (c1 < 0) {
 		c1 = -c1;
@@ -69,13 +69,13 @@ Ray Scene::createRefractedRay(LocalGeo local, Ray ray,Intersection in) {
 		local.normal.p = -local.normal.p;
 		relativeIndex = in.shape->refractiveIndex / 1.0;
 		float k = 1 - (pow(relativeIndex, 2)*(1 - pow(c1, 2)));
-		if (k < 0) { //T.I.R.
+		if (k < 0) { // Total internal reflection
 			Ray TirRay = createReflectedRay(local, ray);
 			return TirRay;
 		}
 	}
 	float c2 = sqrt(1 - (pow(relativeIndex, 2)*(1 - pow(c1, 2))));
-	ray.direction = (relativeIndex*ray.direction) + ((relativeIndex*c1) - c2)*vec4(local.normal.p, 0); //refracted dir 
+	ray.direction = (relativeIndex*ray.direction) + ((relativeIndex*c1) - c2)*vec4(local.normal.p, 0); // refracted dir 
 	local.point.p += ray.direction*0.0001;  //epsilon
 	return Ray(local.point.p, glm::normalize(ray.direction), ray.t_max, ray.t_min, ray.t);
 }
@@ -90,11 +90,11 @@ void Scene::frensel(LocalGeo local, Ray ray, Intersection in,float &kr) {
 		kr = 1;
 	}
 	else {
-		float cost = sqrtf(std::fmaxf(0.f,1-pow(sint,2)));
+		float cost = sqrtf(std::fmaxf(0.f, 1-pow(sint,2)));
 		c1 = fabsf(c1);
 		float rs = ((n2*c1) - (n1*cost)) / ((n2*c1) + (n1*cost)); //  R||
 		float rp = ((n1*c1) - (n2*cost)) / ((n1*c1) + (n2*cost)); //  R_|_
-		kr = (pow(rs, 2) + pow(rp, 2)) / 2.0;  //kt = 1 - kr | kr->reflected part, kt -> refracted/transmitted part
+		kr = (pow(rs, 2) + pow(rp, 2)) / 2.0;  // kt = 1 - kr | kr->reflected part, kt -> refracted/transmitted part
 	}
 }
 
@@ -122,41 +122,6 @@ vector<vec3> Scene::getRandomPointOnQuad(Quad *quad, int count) {//buggy!!
 	}
 
 	return randomPoints;
-}
-
-Ray* Scene::getShadowRays(vec3 mypos, AreaLight *light) {
-	/*
-	Returns shadow rays for area light. Manually picking uniformly distributed 
-	points on the light right now. Randomized selection method doesn't work right
-	now
-	*/
-	Ray shadowRays[17];
-
-	Quad* sourcePolygon = (Quad*)light->q;
-
-	vec3 midpoint1 = (sourcePolygon->v1 + sourcePolygon->v2) / 2.0;
-	vec3 midpoint2 = ((sourcePolygon->v2 + sourcePolygon->v3) / 2.0);
-	vec3 midpoint3 = ((sourcePolygon->v3 + sourcePolygon->v4) / 2.0);
-	vec3 midpoint4 = ((sourcePolygon->v1 + sourcePolygon->v4) / 2.0);
-	shadowRays[0] = Ray(mypos, sourcePolygon->v1 - mypos, INFINITY, 0, 0);
-	shadowRays[1] = Ray(mypos, sourcePolygon->v2 - mypos, INFINITY, 0, 0);
-	shadowRays[2] = Ray(mypos, sourcePolygon->v3 - mypos, INFINITY, 0, 0);
-	shadowRays[3] = Ray(mypos, sourcePolygon->v4 - mypos, INFINITY, 0, 0);
-	shadowRays[4] = Ray(mypos, light->pos - mypos, INFINITY, 0, 0);
-	shadowRays[5] = Ray(mypos, midpoint1 - mypos, INFINITY, 0, 0);
-	shadowRays[6] = Ray(mypos, midpoint2 - mypos, INFINITY, 0, 0);
-	shadowRays[7] = Ray(mypos, midpoint3 - mypos, INFINITY, 0, 0);
-	shadowRays[8] = Ray(mypos, midpoint4 - mypos, INFINITY, 0, 0);
-	shadowRays[9] = Ray(mypos, ((sourcePolygon->v1 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[10] = Ray(mypos, ((sourcePolygon->v2 + midpoint1) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[11] = Ray(mypos, ((sourcePolygon->v2 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[12] = Ray(mypos, ((sourcePolygon->v3 + midpoint2) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[13] = Ray(mypos, ((sourcePolygon->v3 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[14] = Ray(mypos, ((sourcePolygon->v4 + midpoint3) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[15] = Ray(mypos, ((sourcePolygon->v1 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
-	shadowRays[16] = Ray(mypos, ((sourcePolygon->v4 + midpoint4) / 2.0) - mypos, INFINITY, 0, 0);
-
-	return shadowRays;
 }
 
 Color Scene::findColor(Intersection *in) {
@@ -224,6 +189,7 @@ Color Scene::findColor(Intersection *in) {
 		}
 		if (dynamic_cast<AreaLight*>(lights[i]) != 0) {
 			AreaLight *light = dynamic_cast<AreaLight*>(lights[i]);
+			// following lines are redundant. can move these to a separate object or add a method inside light class
 			vec3 lightposn = light->pos;
 			vec3 direction = glm::normalize(lightposn - mypos);
 			vec3 lightColor = vec3(light->color.r, light->color.g, light->color.b);
@@ -231,33 +197,23 @@ Color Scene::findColor(Intersection *in) {
 			float distance = glm::distance(lightposn, mypos);
 			float attenFactor = (1.0f * light->intensity) / (light->attenuation[0] + 
 				(light->attenuation[1] * distance) + (light->attenuation[2] * pow(distance, 2)));
-			//float attenFactor = (distance*0.85);
 
 			//shadows
 
 			Color pointColor = computeLight(direction, lightColor, normal, halfvec, in->shape);
-			float cf = 1.0f / (float) numShadowRays; //no. of sample points for soft shadow tests(denom). multiplied to each unshadowed part
-			if (true) {
-				vector<vec3> randomPoints = getRandomPointOnQuad((Quad*)light->q, numShadowRays);
-				for (unsigned int i = 0; i < numShadowRays; i++) {
-					Ray shadowRayTest = Ray(mypos, randomPoints.at(i) - mypos, INFINITY, 0, 0);
-					if (!intersectP(shadowRayTest, in->shape)) {
-						color.r += cf * pointColor.r * attenFactor * light->intensity;
-						color.g += cf * pointColor.g * attenFactor * light->intensity;
-						color.b += cf * pointColor.b * attenFactor * light->intensity;
-					}
+			// no. of sample points for soft shadow tests(denom). multiplied to each unshadowed part
+			float cf = 1.0f / (float) numShadowRays; 
+			vector<vec3> randomPoints = getRandomPointOnQuad((Quad*)light->q, numShadowRays);
+
+			for (unsigned int i = 0; i < numShadowRays; i++) {
+				Ray shadowRayTest = Ray(mypos, randomPoints.at(i) - mypos, INFINITY, 0, 0);
+				if (!intersectP(shadowRayTest, in->shape)) {
+					color.r += cf * pointColor.r * attenFactor * light->intensity;
+					color.g += cf * pointColor.g * attenFactor * light->intensity;
+					color.b += cf * pointColor.b * attenFactor * light->intensity;
 				}
 			}
-			else {
-				Ray* shadowRays = getShadowRays(mypos, light);
-				for (unsigned int i = 0; i < 17; i++) {
-					if (!intersectP(shadowRays[i], in->shape)) {
-						color.r += cf * pointColor.r * attenFactor * light->intensity;
-						color.g += cf * pointColor.g * attenFactor * light->intensity;
-						color.b += cf * pointColor.b * attenFactor * light->intensity;
-					}
-				}
-			}
+			
 		} 
 	}
 

@@ -8,9 +8,18 @@ void Draw::parsedScene(Scene *scene, string objFile) {
 	objParser parser;
 	parser.parseObj(objFile, scene);
 
-	PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 2, 3));
-	p->setIntensity(2);
-	scene->lights[0] = p;
+	// PointLight *p = new PointLight(Color(1, 1, 1), vec3(0, 2, 3));
+	// p->setIntensity(2);
+	Quad *q = new Quad(vec3(-0.5, 2, 2.5), vec3(0.5, 2, 2.5), vec3(0.5, 2, 1.5), vec3(-0.5, 2, 1.5));
+	q->setLight(true);
+	float ambient[3] = { 0.9, 0.9, 0.9 };
+	q->setAmbient(ambient);
+	scene->shapes[scene->numObjects] = q;
+	scene->numObjects += 1;
+
+	AreaLight *l = new AreaLight(Color(1, 1, 1), q);
+	l->setIntensity(3);
+	scene->lights[0] = l;
 }
 
 void Draw::CylinderTest(Scene *scene) {

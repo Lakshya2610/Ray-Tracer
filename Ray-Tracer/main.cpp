@@ -25,8 +25,8 @@
 
 using namespace std;
 
-#define SUPER_SAMPLE false		//Supersample generated image or not.
-#define MULTI_THREADED true		//To enable or disable multi-threading.
+#define SUPER_SAMPLE false		// Supersample generated image or not.
+#define MULTI_THREADED true		// To enable or disable multi-threading.
 
 stack<mat4> transfstack;
 
@@ -82,8 +82,6 @@ int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	
 	// setup scene for rendering
 	Draw draw = Draw();
-	//Scene *scene = new Scene(10, 10);
-	//readfile(argv[1], scene);
 	// draw.initObjects(scene);
     // draw.RefractionTestScene(scene);
 	// draw.SphereScene(scene);
