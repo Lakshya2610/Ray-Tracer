@@ -27,18 +27,20 @@ using namespace std;
 
 #define SUPER_SAMPLE false		// Supersample generated image or not.
 #define MULTI_THREADED true		// To enable or disable multi-threading.
+#define DEFAULT_WIDTH 800
+#define DEFAULT_HEIGHT 600
 
 stack<mat4> transfstack;
 
-Scene *scene = new Scene(1280, 720);
-Film film = Film(scene->w, scene->h, SUPER_SAMPLE);
+Scene *scene = new Scene(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+Film _film = Film(0, 0, false);
 vector<std::thread> threads;
 
 /* Render the frame on screen with updated pixel values */
 void renderFrame() {
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glDrawPixels(scene->w, scene->h, GL_BGR, GL_FLOAT, film.pixelsArray);
+	glDrawPixels(scene->w, scene->h, GL_BGR, GL_FLOAT, _film.pixelsArray);
 	glFlush();
 }
 
@@ -67,7 +69,7 @@ void initOpenGLWindow() {
 }
 
 void cleanup() {
-	try { film.writeToImage(); } // outputs image 
+	try { _film.writeToImage(); } // outputs image 
 	catch (const std::exception&) { cout << "Couldn't save the image"; }
 
 	// clear the memory and finish
@@ -78,15 +80,41 @@ void cleanup() {
 	delete scene;
 }
 
+int displayUserInputPrompt() {
+	char confirm = 'N';
+	int width = -1, height = -1;
+	cout << "Enter render dimentions:\n";
+	cout << "Width: ";
+	scanf_s("%d", &width);
+
+	cout << "Height: ";
+	scanf_s("%d", &height);
+
+	printf("Render scene with dim: %d x %d? (Y/N)\n", width, height);
+	scanf_s("%c", &confirm);
+	// first read could be newline from previous entry
+	if (confirm == '\n') scanf_s("%c", &confirm);
+	if (confirm == 'Y' || confirm == 'y') {
+		scene->w = width;
+		scene->h = height;
+		return 0;
+	}
+	else if (confirm == 'N' || confirm == 'n') return displayUserInputPrompt();
+	else return 1;
+}
+
 int main(int argc, const char * argv[]) {  //int argc, const char * argv[]
 	
 	// setup scene for rendering
+	if (displayUserInputPrompt()) {
+		cout << "User cancelled render";
+		return 1;
+	}
+	Film film = Film(scene->w, scene->h, SUPER_SAMPLE);
+	_film = film;
 	Draw draw = Draw();
 	// draw.initObjects(scene);
     // draw.RefractionTestScene(scene);
-	// draw.SphereScene(scene);
-	// draw.SphereScene2();
-	// draw.CornellBox();
 	// draw.CylinderTest();   //Can place anywhere now. Rotation still todo. 
 						     //Caps still todo. (At extrema of cylinder, could 
 						     //do ray-plane or ray-triangle intersection)
