@@ -68,17 +68,20 @@ void Film::writeToImage() {
 	FreeImage_Initialise();
 	FIBITMAP *img;
 	if (isSuperSampled) {
-		printf("SuperSampling...\n");
+		PRINT_INFO( COM_CHANNEL_FILM, "Supersampling...." );
 		superSample((float*) this->pixels);
 		img = FreeImage_ConvertFromRawBits(superSampledPixels, w / 2.0, h / 2.0, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
 	}
 	else {
 		img = FreeImage_ConvertFromRawBits(pixels, w , h , w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
 	}
-	printf("Outputting Image...\n");
+	PRINT_INFO( COM_CHANNEL_FILM, "Outputting Image..." );
 	const char fname[] = "output.png";
 	FreeImage_Save(FIF_PNG, img, fname, 0);
 	FreeImage_DeInitialise();
+
+	PRINT_INFO( COM_CHANNEL_FILM, "Image saved. Cleaning up" );
+
 	delete superSampledPixels;
 	delete pixels;
 }

@@ -96,21 +96,30 @@ public:
 	void setTransform(mat4 _transform) {
 		transform = _transform;
 	}
+
+	virtual float GetMinX() = 0; // for easy access by AABB
+	virtual vec3 GetCenter() = 0;
+	virtual vec3 GetMinCoords() = 0;
+	virtual vec3 GetMaxCoords() = 0;
 };
 
 class Sphere :public Shape {
-	void getQuadretic(Ray & ray, float &a, float &b, float &c);
+	void getQuadretic( Ray& ray, float& a, float& b, float& c );
 public:
 	vec3 center;
 	float radius;
-	Sphere(vec3, float);
+	Sphere( vec3, float );
 	Sphere() {
-		center = vec3(0, 0, 0);
+		center = vec3( 0, 0, 0 );
 		radius = 0;
 	}
 	~Sphere() {};
-	bool intersectP(Ray& ray);
-	bool intersect(Ray& ray, float * tHit, LocalGeo * local);
+	bool intersectP( Ray& ray );
+	bool intersect( Ray& ray, float* tHit, LocalGeo* local );
+	float GetMinX();
+	vec3 GetCenter();
+	vec3 GetMinCoords();
+	vec3 GetMaxCoords();
 };
 
 class Triangle :public Shape {
@@ -131,40 +140,49 @@ public:
 	bool intersectP(Ray &ray);
 	bool intersect(Ray &ray, float *tHit, LocalGeo * local);
 	void barycentric(vec4 p, float &alpha, float &beta, float &gamma); //helper func.
+	float GetMinX();
+	vec3 GetCenter();
+	vec3 GetMinCoords();
+	vec3 GetMaxCoords();
 };
 
 class Cylinder :public Shape {
-	void getQuadretic(Ray &ray, float &a, float &b, float &c);
+	void getQuadretic( Ray& ray, float& a, float& b, float& c );
 	float yMax = 0;
 	float yMin = 0;
 public:
 	float height;
 	float radius;
-	vec3 center = vec3(0, 0, 0); //temp vec for cylinder movement
-	vec3 cap1Center = vec3(0, 0, 0);
-	vec3 cap2Center = vec3(0, 0, 0);
-	Cylinder(float _radius, float _height,vec3 _cap1Center, vec3 _cap2Center) {
+	vec3 center = vec3( 0, 0, 0 ); //temp vec for cylinder movement
+	vec3 cap1Center = vec3( 0, 0, 0 );
+	vec3 cap2Center = vec3( 0, 0, 0 );
+	Cylinder( float _radius, float _height, vec3 _cap1Center, vec3 _cap2Center ) {
 		radius = _radius;
-		yMax = center.y + (height / 2.0);
-		yMin = center.y - (height / 2.0);
+		yMax = center.y + ( height / 2.0 );
+		yMin = center.y - ( height / 2.0 );
 		cap1Center = _cap1Center;
 		cap2Center = _cap2Center;
+		center = ( cap1Center + cap2Center ) / 2;
 	}
-	Cylinder(float _radius, vec3 _center, float _height) {
+	Cylinder( float _radius, vec3 _center, float _height ) {
 		radius = _radius;
 		center = _center;
 		height = _height;
-		yMax = center.y + (height/2.0);
-		yMin = center.y - (height/2.0);
+		yMax = center.y + ( height / 2.0 );
+		yMin = center.y - ( height / 2.0 );
 	}
 	Cylinder() {
 		radius = 0;
-		cap1Center = vec3(0, 0, 0);
-		cap2Center = vec3(0, 0, 0);
+		cap1Center = vec3( 0, 0, 0 );
+		cap2Center = vec3( 0, 0, 0 );
 	}
 	~Cylinder() {}
-	bool intersectP(Ray &ray);
-	bool intersect(Ray &ray, float *tHit, LocalGeo * local);
+	bool intersectP( Ray& ray );
+	bool intersect( Ray& ray, float* tHit, LocalGeo* local );
+	float GetMinX();
+	vec3 GetCenter();
+	vec3 GetMinCoords();
+	vec3 GetMaxCoords();
 };
 
 class Quad :public Shape {
@@ -188,25 +206,10 @@ public:
 	//bool intersectT(Ray &ray, float *tHit, LocalGeo *local);
 	bool intersectP(Ray &ray);
 	bool intersect(Ray &ray, float *tHit, LocalGeo * local);
-};
-
-class BoundingBox :public Shape {
-	Quad left, right, bottom, top, front, back;
-public:
-	Shape * *shapes;
-	BoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
-	~BoundingBox(){}
-	bool intersect(Ray &ray, float *tHit, LocalGeo * local);
-	bool intersectP(Ray &ray){
-		float *t = new float(0);
-		LocalGeo *local = new LocalGeo(Point(), Normal());
-
-		bool res = intersect(ray, t, local);
-
-		delete t;
-		delete local;
-		return res;
-	}
+	float GetMinX();
+	vec3 GetCenter();
+	vec3 GetMinCoords();
+	vec3 GetMaxCoords();
 };
 
 class Intersection {

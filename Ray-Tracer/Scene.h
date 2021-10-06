@@ -1,9 +1,9 @@
 #pragma once
-#include "Variables.h"
 #include "Shape.h"
 #include "Camera.h"
 #include "Transform.h"
 #include "Light.h"
+#include "AABB.h"
 #include <random>
 
 class Scene {
@@ -29,6 +29,11 @@ public:
 	Camera * camera = new Camera(lookFrom, lookAt, up, fov);
 	Color defaultColor = Color(0, 0, 0);
 	bool pathTraced = false;
+	unsigned long long numIntersectionTests = 0;
+#if USING( BVH )
+	AABBTree aabbTree = AABBTree();
+#endif // USING( BVH )
+
 	
 	Scene(int _w, int _h) {
 		w = _w;

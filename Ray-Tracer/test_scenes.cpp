@@ -20,6 +20,13 @@ void Draw::parsedScene(Scene *scene, string objFile) {
 	AreaLight *l = new AreaLight(Color(1, 1, 1), q);
 	l->setIntensity(3);
 	scene->lights[0] = l;
+
+	vec3 lookFrom = vec3( 0, 0.5, 1.25 );
+	vec3 lookAt = vec3( 0, -0.5, 0 );
+	scene->lookFrom = lookFrom;
+	scene->lookAt = lookAt;
+	scene->fov = 70;
+	scene->updateCamera();
 }
 
 void Draw::CylinderTest(Scene *scene) {

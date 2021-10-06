@@ -61,6 +61,34 @@ bool Sphere::intersect(Ray &ray, float *tHit, LocalGeo * local) {
 	}
 }
 
+float Sphere::GetMinX()
+{
+	return center.x - radius;
+}
+
+vec3 Sphere::GetCenter()
+{
+	return center;
+}
+
+vec3 Sphere::GetMinCoords()
+{
+	vec3 min = vec3( 0 );
+	min.x = GetMinX();
+	min.y = center.y - radius;
+	min.z = center.z - radius;
+	return min;
+}
+
+vec3 Sphere::GetMaxCoords()
+{
+	vec3 max = vec3( 0 );
+	max.x = center.x + radius;
+	max.y = center.y + radius;
+	max.z = center.z + radius;
+	return max;
+}
+
 void Cylinder::getQuadretic(Ray &ray, float &a, float &b, float &c) { 
 	vec3 p = vec3(ray.pos.x, ray.pos.y, ray.pos.z);
 	vec3 d = vec3(ray.direction.x, ray.direction.y, ray.direction.z);
@@ -129,6 +157,28 @@ bool Cylinder::intersectP(Ray &ray) {
 	delete t;
 	delete local;
 	return res;
+}
+
+float Cylinder::GetMinX()
+{
+	return center.x - radius; // not correct for rotated cylinders, todo
+}
+
+vec3 Cylinder::GetCenter()
+{
+	return center;
+}
+
+vec3 Cylinder::GetMinCoords()
+{
+	vec3 min = vec3( 0 );
+	return min;
+}
+
+vec3 Cylinder::GetMaxCoords()
+{
+	vec3 max = vec3( 0 );
+	return max;
 }
 
 void Triangle::setNormal() {
@@ -206,6 +256,35 @@ bool Triangle::intersectP(Ray &ray) {
 	return res;
 }
 
+float Triangle::GetMinX()
+{
+	return fminf( vert1.x, fminf( vert2.x, vert3.x ) );
+}
+
+vec3 Triangle::GetCenter()
+{
+	// centroid should be good enough
+	return ( vert1 + vert2 + vert3 ) / 3;
+}
+
+vec3 Triangle::GetMinCoords()
+{
+	vec3 min = vec3( 0 );
+	min.x = GetMinX();
+	min.y = fminf( vert1.y, fminf( vert2.y, vert3.y ) );
+	min.z = fminf( vert1.z, fminf( vert2.z, vert3.z ) );
+	return min;
+}
+
+vec3 Triangle::GetMaxCoords()
+{
+	vec3 max = vec3( 0 );
+	max.x = fmaxf( vert1.x, fmaxf( vert2.x, vert3.x ) );
+	max.y = fmaxf( vert1.y, fmaxf( vert2.y, vert3.y ) );
+	max.z = fmaxf( vert1.z, fmaxf( vert2.z, vert3.z ) );
+	return max;
+}
+
 void Quad::setNormal() {
 	normal = glm::normalize(glm::cross(v1 - v3, v2 - v3));
 }
@@ -234,30 +313,6 @@ bool Quad::intersect(Ray &ray, float *tHit, LocalGeo * local) {
 		
 }
 
-/*bool Quad::intersect(Ray &ray, float *tHit, LocalGeo * local) {
-	
-	mat4 invTransform = glm::inverse(transform);
-	Ray rayTransformed = Ray(invTransform*ray.pos, invTransform*ray.direction, ray.t_max, ray.t_min, ray.t);
-	
-	setNormal();
-	
-	float denom = glm::dot(rayTransformed.direction, vec4(normal, 1.0));
-
-	if (fabsf(denom) > 0.000001) {
-		vec3 p0 = vec3((v1.x + v3.x) / 2.0, (v1.y + v3.y) / 2.0, (v1.z + v3.z) / 2.0);//center of Quad
-		vec4 x = vec4(p0,1) - rayTransformed.pos;
-		float t = glm::dot(x, vec4(normal, 1)) / denom;
-		
-		vec4 rayP = rayTransformed.pos + (rayTransformed.direction*t);
-		*tHit = t;
-		*local = LocalGeo(Point(rayP), Normal(normal));
-
-		return (t >= 0);
-	}
-	
-	return false;
-}*/
-
 bool Quad::intersectP(Ray &ray) {
 	float *t = new float(0);
 	LocalGeo *local = new LocalGeo(Point(), Normal());
@@ -269,50 +324,24 @@ bool Quad::intersectP(Ray &ray) {
 	return res;
 }
 
-BoundingBox::BoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-	/*According to extreme values of polygonal mesh, a bounding box made up of 6 quads(12 Triangles) is created.
-	This box is used for preliminary intersection tests to increase speed of the ray tracer.*/
-
-	//left face for the bounding box
-	left.v1 = vec3(minX, minY, minZ);
-	left.v2 = vec3(minX, minY, maxZ);
-	left.v3 = vec3(minX, maxY, maxZ);
-	left.v4 = vec3(minX, maxY, minZ);
-	//right face for bounding box
-	right.v1 = vec3(maxX, minY, maxZ);
-	right.v2 = vec3(maxX, minY, minZ);
-	right.v3 = vec3(maxX, maxY, minZ);
-	right.v4 = vec3(maxX, maxY, maxZ);
-	//top face for bounding box
-	top.v1 = vec3(minX, maxY, maxZ);
-	top.v2 = vec3(maxX, maxY, maxZ);
-	top.v3 = vec3(maxX, maxY, minZ);
-	top.v4 = vec3(minX, maxY, minZ);
-	//bottom face for bounding box
-	bottom.v1 = vec3(minX, minY, maxZ);
-	bottom.v2 = vec3(maxX, minY, maxZ);
-	bottom.v3 = vec3(maxX, minY, minZ);
-	bottom.v4 = vec3(minX, minY, minZ);
-	//back face for bounding box
-	back.v1 = vec3(minX, minY, minZ);
-	back.v2 = vec3(maxX, minY, minZ);
-	back.v3 = vec3(maxX, maxY, minZ);
-	back.v4 = vec3(minX, maxY, minZ);
-	//front face for bounding box
-	front.v1 = vec3(minX, minY, maxZ);
-	front.v2 = vec3(maxX, minY, maxZ);
-	front.v3 = vec3(maxX, maxY, maxZ);
-	front.v4 = vec3(minX, maxY, maxZ);
-
-	shapes = new Shape*[maxObjects];
+float Quad::GetMinX()
+{
+	return fminf( v1.x, fminf( v2.x, fminf( v3.x, v4.x ) ) );
 }
 
-bool BoundingBox::intersect(Ray &ray, float *tHit, LocalGeo * local) {
-	if (left.intersectP(ray) || right.intersectP(ray) || bottom.intersectP(ray) \
-		|| top.intersectP(ray) || front.intersectP(ray) || back.intersectP(ray)) {
-		int i = 0;
-		i = 2;
-		return true;
-	}
-	else { return false; }
+vec3 Quad::GetCenter()
+{
+	return ( v1 + v2 + v3 + v4 ) / 3;
+}
+
+vec3 Quad::GetMinCoords()
+{
+	vec3 min = vec3( 0 );
+	return min;
+}
+
+vec3 Quad::GetMaxCoords()
+{
+	vec3 max = vec3( 0 );
+	return max;
 }

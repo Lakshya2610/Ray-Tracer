@@ -6,30 +6,45 @@
 #include <array>
 #include <mutex>
 
-bool Scene::intersect(Ray &ray, float *tHit, Intersection *in) {
+#if USING( BVH )
+
+bool Scene::intersect( Ray& ray, float* tHit, Intersection* in ) {
+	
 	float _tHit = INFINITY;
 	int index = 0;
-	LocalGeo _local = LocalGeo(Point(vec4(0, 0, 0, 1)), Normal(vec3(0, 0, 0)));
+	LocalGeo _local = LocalGeo( Point( vec4( 0, 0, 0, 1 ) ), Normal( vec3( 0, 0, 0 ) ) );
+	
+	return aabbTree.Intersect( &ray, tHit, in );
+}
+
+#else
+
+bool Scene::intersect( Ray& ray, float* tHit, Intersection* in ) {
+	float _tHit = INFINITY;
+	int index = 0;
+	LocalGeo _local = LocalGeo( Point( vec4( 0, 0, 0, 1 ) ), Normal( vec3( 0, 0, 0 ) ) );
 	bool hit = false;
-	for (int i = 0; i < numObjects; i++) {
-		if (shapes[i]->intersect(ray, tHit, in->localGeo)) {//calls the particular object's intersect method
-			if (_tHit >= *tHit) {
+	for ( int i = 0; i < numObjects; i++ ) {
+		numIntersectionTests++;
+		if ( shapes[i]->intersect( ray, tHit, in->localGeo ) ) {//calls the particular object's intersect method
+			if ( _tHit >= *tHit ) {
 				_tHit = *tHit;
-				_local = *(in->localGeo);
-				//_shape = shapes[i];
-				if (shapes[i]->isBoundingBox) {
-					in->shape = ((BoundingBox*)shapes[i])->shapes[index];
-				}
-				else { in->shape = shapes[i]; }
+				_local = *( in->localGeo );
+				in->shape = shapes[i];
 			}
 			hit = true;
 		}
 	}
 	*tHit = _tHit;
-	*(in->localGeo) = _local;
+	*( in->localGeo ) = _local;
 	//in->shape = _shape;
 	return hit;
 }
+
+#endif // USING( BVH )
+
+
+
 
 bool Scene::intersectP(Ray &ray, Shape *shape) {
 	float threshold = 0.0001; 

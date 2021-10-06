@@ -7,7 +7,6 @@ parser based on OBJ file parser from https://github.com/tyduptyler13/RayTracer/b
 
 void objParser::parseObj(std::string fileName, Scene *scene) {
 	float minX, minY, minZ, maxX, maxY, maxZ;
-	BoundingBox *box;
 	Shape **shps = new Shape*[maxObjects];
 	int iter = 0;
 	bool check = false;
